@@ -8,7 +8,7 @@ type common_fields =
         archive: string;
     }
 
-type month = int
+type month = Jan | Feb | Mar | Apr | May | Jun | Jul | Aug | Sep | Oct | Nov | Dec
 
 type article_fields =
     {
