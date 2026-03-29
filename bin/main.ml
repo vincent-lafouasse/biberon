@@ -48,7 +48,9 @@ type bib_entry =
   | Other of etype * common_fields
 
 type raw_entry = { etype : string; fields : (string * string) list }
+
 type parser = { input : string; position : int; ch : char option }
+[@@deriving show]
 
 (* input -> parser option *)
 let init_parser input =
@@ -56,7 +58,11 @@ let init_parser input =
   | "" -> None
   | _ -> Some { input; position = 0; ch = Some (String.get input 0) }
 
-let foo =
-  { author = "hello"; title = "world"; year = 67; archive = "google.com" }
+let read_file file = In_channel.with_open_bin file In_channel.input_all
 
-let () = print_endline foo.author
+let () =
+  let path = Sys.argv.(1) in
+  let input = read_file path in
+  match init_parser input with
+  | None -> print_endline "empty"
+  | Some parser -> print_endline (show_parser parser)
