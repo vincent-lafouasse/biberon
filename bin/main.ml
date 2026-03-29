@@ -42,6 +42,19 @@ type raw_entry =
         fields: (string * string) list;
     }
 
+type parser =
+    {
+        input: string;
+        position: int;
+        ch: char option;
+    }
+
+(* input -> parser option *)
+let init_parser input =
+    match input with
+    | "" -> None
+    | _ -> Some { input = input; position = 0; ch = Some (String.get input 0) }
+
 let foo =
     {
         author = "hello";
