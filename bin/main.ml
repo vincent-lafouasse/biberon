@@ -27,12 +27,10 @@ type inproceedings_fields =
         doi: string;
     }
 
-type misc_fields = (string * string) list
-
 type bib_entry =
     | Article of common_fields * article_fields
     | Inproceedings of common_fields * inproceedings_fields
-    | Misc of common_fields * misc_fields
+    | Other of string * common_fields
 
 let foo =
     {
