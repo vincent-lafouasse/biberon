@@ -36,6 +36,12 @@ type bib_entry =
     | Inproceedings of common_fields * inproceedings_fields
     | Other of etype * common_fields
 
+type raw_entry =
+    {
+        etype: string;
+        fields: (string * string) list;
+    }
+
 let foo =
     {
         author = "hello";
