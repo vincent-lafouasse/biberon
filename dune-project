@@ -5,11 +5,11 @@
 (generate_opam_files true)
 
 (source
- (github username/reponame))
+ (github vincent-lafouasse/no-repo-yet))
 
-(authors "Author Name <author@example.com>")
+(authors "poss (vincent lafouasse)")
 
-(maintainers "Maintainer Name <maintainer@example.com>")
+(maintainers "poss (vincent lafouasse)")
 
 (license LICENSE)
 
@@ -17,10 +17,10 @@
 
 (package
  (name biberon)
- (synopsis "A short synopsis")
- (description "A longer description")
+ (synopsis "a citation formatter")
+ (description "generate markdown from a .bib")
  (depends ocaml)
  (tags
-  ("add topics" "to describe" your project)))
+  (bibtex markdown citation bibliography)))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/reference/dune-project/index.html
