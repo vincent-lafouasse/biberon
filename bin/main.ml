@@ -38,7 +38,9 @@ type inproceedings_fields = {
 
 type etype = string
 
-(* fallback to Other if any etype is unrecognised. they should still have the common fields *)
+(* fallback to Other if any etype is unrecognised.
+   they should still have the common fields
+*)
 (* invalid entries should not be representable *)
 type bib_entry =
   | Article of common_fields * article_fields
