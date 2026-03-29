@@ -1,4 +1,5 @@
 (executable
  (public_name biberon)
+ (preprocess (pps ppx_deriving.show ppx_deriving.ord))
  (name main)
  (libraries str))
