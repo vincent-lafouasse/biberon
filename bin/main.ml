@@ -27,10 +27,14 @@ type inproceedings_fields =
         doi: string;
     }
 
+type etype = string
+
+(* fallback to Other if any etype is unrecognised. they should still have the common fields *)
+(* invalid entries should not be representable *)
 type bib_entry =
     | Article of common_fields * article_fields
     | Inproceedings of common_fields * inproceedings_fields
-    | Other of string * common_fields
+    | Other of etype * common_fields
 
 let foo =
     {
