@@ -1,6 +1,7 @@
 [@@@warning "-69-34-37-32"]
 
 type t = { input : string; position : int; ch : char option } [@@deriving show]
+type error = UnexpectedCharacter of char | UnexpectedEof
 
 let init (input : string) : t =
   match input with
@@ -24,8 +25,11 @@ let char_is_ident = either Char.Ascii.is_alphanum (Char.equal '_')
 (* parser -> parser * string *)
 let expect_identifier (_parser : t) = failwith "todo"
 
-(* parser -> char -> parser option *)
-let expect_char (_parser : t) (_c : char) = failwith "todo"
+let expect_char (parser : t) (c : char) : t * error option =
+  match get parser with
+  | None -> (parser, Some UnexpectedEof)
+  | Some inner when inner = c -> (advance parser, None)
+  | Some inner -> (parser, Some (UnexpectedCharacter inner))
 
 (* parser -> parser * Entry.raw_entry option *)
 let next_raw_entry (_parser : t) = failwith "todo"
