@@ -14,13 +14,13 @@ let advance (parser : t) : t =
   if eof parser then parser else { parser with position = parser.position + 1 }
 
 (* parser -> parser * string *)
-let expect_identifier (parser : t) = failwith "todo"
+let expect_identifier (_parser : t) = failwith "todo"
 
 (* parser -> char -> parser option *)
-let expect_char (parser : t) (_c : char) = failwith "todo"
+let expect_char (_parser : t) (_c : char) = failwith "todo"
 
 (* parser -> parser * Entry.raw_entry option *)
-let next_raw_entry (parser : t) = failwith "todo"
+let next_raw_entry (_parser : t) = failwith "todo"
 
 let __test () =
   let input = "abc" in
