@@ -64,6 +64,10 @@ let parser_advance (parser : parser) : parser =
   if parser_eof parser then parser
   else { parser with position = parser.position + 1 }
 
+(* val parser_expect_identifier: parser -> parser * string option *)
+(* val parser_expect_char: parser -> char -> parser option *)
+(* val parser_next_raw_entry: parser -> parser * raw_entry option *)
+
 let die msg =
   print_endline msg;
   exit 1
