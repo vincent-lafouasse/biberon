@@ -8,6 +8,7 @@ let init (input : string) : t =
   | _ -> { input; position = 1; ch = Some (String.get input 0) }
 
 let eof (parser : t) : bool = parser.position >= String.length parser.input
+let get (parser : t) : char option = parser.ch
 
 let peek (parser : t) : char option =
   if eof parser then None else Some (String.get parser.input parser.position)
