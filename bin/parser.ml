@@ -5,7 +5,7 @@ type t = { input : string; position : int; ch : char option } [@@deriving show]
 let init (input : string) : t =
   match input with
   | "" -> { input; position = 0; ch = None }
-  | _ -> { input; position = 0; ch = Some (String.get input 0) }
+  | _ -> { input; position = 1; ch = Some (String.get input 0) }
 
 let eof (parser : t) : bool = parser.position >= String.length parser.input
 
@@ -14,7 +14,9 @@ let peek (parser : t) : char option =
 
 (* TODO: don't forget to update ch *)
 let advance (parser : t) : t =
-  if eof parser then parser else { parser with position = parser.position + 1 }
+  let position = if eof parser then parser.position else parser.position + 1 in
+  let ch = peek parser in
+  { parser with position; ch }
 
 (* parser -> parser * string *)
 let expect_identifier (_parser : t) = failwith "todo"
@@ -29,6 +31,12 @@ let log (parser : t) : unit = print_endline (show parser)
 let __test () =
   let input = "abc" in
   let parser = init input in
+  let _ = log parser in
+  let parser = advance parser in
+  let _ = log parser in
+  let parser = advance parser in
+  let _ = log parser in
+  let parser = advance parser in
   let _ = log parser in
   let parser = advance parser in
   let _ = log parser in
