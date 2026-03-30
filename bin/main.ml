@@ -57,11 +57,18 @@ let init_parser (input : string) : parser option =
   | "" -> None
   | _ -> Some { input; position = 0; ch = Some (String.get input 0) }
 
+let parser_eof (parser : parser) : bool =
+  parser.position >= String.length parser.input
+
+let parser_advance (parser : parser) : parser =
+  if parser_eof parser then parser
+  else { parser with position = parser.position + 1 }
+
+let die msg =
+  print_endline msg;
+  exit 1
+
 let () =
-  let die msg =
-    print_endline msg;
-    exit 1
-  in
   let path =
     match Array.length Sys.argv with
     | 2 -> Sys.argv.(1)
