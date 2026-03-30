@@ -1,4 +1,4 @@
-type t = { input : string; position : int; ch : char option }
+type t = { input : string; position : int; ch : char option } [@@deriving show]
 
 let init (input : string) : t option = failwith "todo"
 let eof (parser : t) : bool = failwith "todo"
@@ -12,3 +12,4 @@ let expect_char (parser : t) (_c : char) = failwith "todo"
 
 (* parser -> parser * Entry.raw_entry option *)
 let next_raw_entry (parser : t) = failwith "todo"
+let show = show_t
