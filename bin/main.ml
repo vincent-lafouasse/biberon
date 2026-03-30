@@ -12,6 +12,6 @@ let parser_from_file_or_die (path : string) : Parser.t =
     In_channel.with_open_bin path In_channel.input_all
   in
   let input = read_file path in
-  match Parser.init input with None -> die "empty" | Some parser -> parser
+  Parser.init input
 
 let () = Parser.__test ()

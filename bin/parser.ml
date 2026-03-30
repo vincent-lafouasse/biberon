@@ -2,10 +2,10 @@
 
 type t = { input : string; position : int; ch : char option } [@@deriving show]
 
-let init (input : string) : t option =
+let init (input : string) : t =
   match input with
-  | "" -> None
-  | _ -> Some { input; position = 0; ch = Some (String.get input 0) }
+  | "" -> { input; position = 0; ch = None }
+  | _ -> { input; position = 0; ch = Some (String.get input 0) }
 
 let eof (parser : t) : bool = parser.position >= String.length parser.input
 
@@ -24,7 +24,7 @@ let next_raw_entry (_parser : t) = failwith "todo"
 
 let __test () =
   let input = "abc" in
-  let parser = match init input with None -> failwith "empty" | Some p -> p in
+  let parser = init input in
   let _ = show parser in
   let parser = advance parser in
   let _ = show parser in
