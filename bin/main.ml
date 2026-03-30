@@ -70,6 +70,7 @@ let die msg =
 let () =
   let path = Sys.argv.(1) in
   let input = read_file path in
-  match init_parser input with
-  | None -> die "empty"
-  | Some parser -> print_endline (show_parser parser)
+  let parser =
+    match init_parser input with None -> die "empty" | Some parser -> parser
+  in
+  print_endline (show_parser parser)
