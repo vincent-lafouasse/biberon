@@ -42,6 +42,7 @@ let char_is_ident_start : char -> bool =
   either Char.Ascii.is_letter (Char.equal '_')
 
 let expect_identifier (parser : t) : t * (string, error) result =
+  let _start : int = parser.position - 1 in
   let parser, err = expect_char parser char_is_ident_start in
   match err with
   | Some err -> (
