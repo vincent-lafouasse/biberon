@@ -68,7 +68,11 @@ let die msg =
   exit 1
 
 let () =
-  let path = Sys.argv.(1) in
+  let path =
+    match Array.length Sys.argv with
+    | 2 -> Sys.argv.(1)
+    | _ -> die "Usage: biberon refs.bib"
+  in
   let input = read_file path in
   let parser =
     match init_parser input with None -> die "empty" | Some parser -> parser
