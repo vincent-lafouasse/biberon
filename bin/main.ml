@@ -1,4 +1,4 @@
-[@@@warning "-69-34-37"]
+[@@@warning "-69-34-37-32"]
 
 type common_fields = {
   author : string;
