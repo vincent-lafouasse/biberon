@@ -68,7 +68,7 @@ let die msg =
   print_endline msg;
   exit 1
 
-let () =
+let parser =
   let path =
     match Array.length Sys.argv with
     | 2 -> Sys.argv.(1)
@@ -81,7 +81,6 @@ let () =
     In_channel.with_open_bin path In_channel.input_all
   in
   let input = read_file path in
-  let parser =
-    match init_parser input with None -> die "empty" | Some parser -> parser
-  in
-  print_endline (show_parser parser)
+  match init_parser input with None -> die "empty" | Some parser -> parser
+
+let () = print_endline (show_parser parser)
