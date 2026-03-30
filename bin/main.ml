@@ -52,7 +52,7 @@ type raw_entry = { etype : string; fields : (string * string) list }
 type parser = { input : string; position : int; ch : char option }
 [@@deriving show]
 
-let init_parser (input : string) : parser option =
+let parser_init (input : string) : parser option =
   match input with
   | "" -> None
   | _ -> Some { input; position = 0; ch = Some (String.get input 0) }
@@ -81,6 +81,6 @@ let parser =
     In_channel.with_open_bin path In_channel.input_all
   in
   let input = read_file path in
-  match init_parser input with None -> die "empty" | Some parser -> parser
+  match parser_init input with None -> die "empty" | Some parser -> parser
 
 let () = print_endline (show_parser parser)
