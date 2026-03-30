@@ -13,7 +13,6 @@ let get (parser : t) : char option = parser.ch
 let peek (parser : t) : char option =
   if eof parser then None else Some (String.get parser.input parser.position)
 
-(* TODO: don't forget to update ch *)
 let advance (parser : t) : t =
   let position = if eof parser then parser.position else parser.position + 1 in
   let ch = peek parser in
