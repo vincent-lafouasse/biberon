@@ -18,6 +18,9 @@ let advance (parser : t) : t =
   let ch = peek parser in
   { parser with position; ch }
 
+let either f g x = f x || g x
+let char_is_ident = either Char.Ascii.is_alphanum (Char.equal '_')
+
 (* parser -> parser * string *)
 let expect_identifier (_parser : t) = failwith "todo"
 
