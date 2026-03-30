@@ -78,12 +78,17 @@ let parser_from_file_or_die (path : string) : parser =
   let input = read_file path in
   match parser_init input with None -> die "empty" | Some parser -> parser
 
-let parser =
-  let path =
-    match Array.length Sys.argv with
-    | 2 -> Sys.argv.(1)
-    | _ -> die "Usage: biberon refs.bib"
-  in
-  parser_from_file_or_die path
+let input = "abc"
 
+let parser =
+  match parser_init input with None -> die "empty" | Some parser -> parser
+
+let () = print_endline (show_parser parser)
+let parser = parser_advance parser
+let () = print_endline (show_parser parser)
+let parser = parser_advance parser
+let () = print_endline (show_parser parser)
+let parser = parser_advance parser
+let () = print_endline (show_parser parser)
+let parser = parser_advance parser
 let () = print_endline (show_parser parser)
