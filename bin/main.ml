@@ -52,8 +52,7 @@ type raw_entry = { etype : string; fields : (string * string) list }
 type parser = { input : string; position : int; ch : char option }
 [@@deriving show]
 
-(* input -> parser option *)
-let init_parser input =
+let init_parser (input : string) : parser option =
   match input with
   | "" -> None
   | _ -> Some { input; position = 0; ch = Some (String.get input 0) }
