@@ -25,11 +25,14 @@ let char_is_ident = either Char.Ascii.is_alphanum (Char.equal '_')
 (* parser -> parser * string *)
 let expect_identifier (_parser : t) = failwith "todo"
 
-let expect_char (parser : t) (c : char) : t * error option =
+let expect_char (parser : t) (pred : char -> bool) : t * error option =
   match get parser with
-  | Some inner when inner = c -> (advance parser, None)
+  | Some inner when pred inner -> (advance parser, None)
   | Some inner -> (parser, Some (UnexpectedCharacter inner))
   | None -> (parser, Some UnexpectedEof)
+
+let expect_char_eq (parser : t) (c : char) : t * error option =
+  expect_char parser (Char.equal c)
 
 (* parser -> parser * Entry.raw_entry option *)
 let next_raw_entry (_parser : t) = failwith "todo"
