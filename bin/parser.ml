@@ -26,12 +26,6 @@ let advance (parser : t) : t =
 
 let either f g x = f x || g x
 
-let char_is_ident : char -> bool =
-  either Char.Ascii.is_alphanum (Char.equal '_')
-
-(* parser -> parser * string *)
-let expect_identifier (_parser : t) = failwith "todo"
-
 let expect_char (parser : t) (pred : char -> bool) : t * error option =
   match get parser with
   | Some inner when pred inner -> (advance parser, None)
@@ -40,6 +34,22 @@ let expect_char (parser : t) (pred : char -> bool) : t * error option =
 
 let expect_char_eq (parser : t) (c : char) : t * error option =
   expect_char parser (Char.equal c)
+
+let char_is_ident : char -> bool =
+  either Char.Ascii.is_alphanum (Char.equal '_')
+
+let char_is_ident_start : char -> bool =
+  either Char.Ascii.is_letter (Char.equal '_')
+
+let expect_identifier (parser : t) : t * (string, error) result =
+  let parser, err = expect_char parser char_is_ident_start in
+  match err with
+  | Some err -> (
+      match err with
+      | UnexpectedEof -> (parser, Error UnexpectedEof)
+      | UnexpectedCharacter ch -> (parser, Error (InvalidKeyFirstCharacter ch))
+      | _ -> failwith "unreachable")
+  | None -> failwith "continue parsing identifier"
 
 (* parser -> parser * Entry.raw_entry option *)
 let next_raw_entry (_parser : t) = failwith "todo"
