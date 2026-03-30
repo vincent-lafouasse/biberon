@@ -21,11 +21,12 @@ let expect_char (_parser : t) (_c : char) = failwith "todo"
 
 (* parser -> parser * Entry.raw_entry option *)
 let next_raw_entry (_parser : t) = failwith "todo"
+let log (parser : t) : unit = print_endline (show parser)
 
 let __test () =
   let input = "abc" in
   let parser = init input in
-  let _ = show parser in
+  let _ = log parser in
   let parser = advance parser in
-  let _ = show parser in
+  let _ = log parser in
   ()
