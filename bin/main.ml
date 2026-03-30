@@ -63,9 +63,13 @@ let init_parser input =
    exceptions later *)
 let read_file file = In_channel.with_open_bin file In_channel.input_all
 
+let die msg =
+  print_endline msg;
+  exit 1
+
 let () =
   let path = Sys.argv.(1) in
   let input = read_file path in
   match init_parser input with
-  | None -> print_endline "empty"
+  | None -> die "empty"
   | Some parser -> print_endline (show_parser parser)
