@@ -36,7 +36,7 @@ type inproceedings_fields = {
   doi : string;
 }
 
-type etype = string
+type etype = Etype of string
 
 (* fallback to Other if any etype is unrecognised.
    they should still have the common fields
