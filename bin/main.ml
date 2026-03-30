@@ -68,12 +68,7 @@ let die msg =
   print_endline msg;
   exit 1
 
-let parser =
-  let path =
-    match Array.length Sys.argv with
-    | 2 -> Sys.argv.(1)
-    | _ -> die "Usage: biberon refs.bib"
-  in
+let parser_from_file_or_die (path : string) : parser =
   (* at some point i'll probably wrap this so it errs instead of throwing
    but for now i'll just assume everything went ok, i'll learn to deal with
    exceptions later *)
@@ -82,5 +77,13 @@ let parser =
   in
   let input = read_file path in
   match parser_init input with None -> die "empty" | Some parser -> parser
+
+let parser =
+  let path =
+    match Array.length Sys.argv with
+    | 2 -> Sys.argv.(1)
+    | _ -> die "Usage: biberon refs.bib"
+  in
+  parser_from_file_or_die path
 
 let () = print_endline (show_parser parser)
