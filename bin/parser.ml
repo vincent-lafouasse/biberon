@@ -27,9 +27,9 @@ let expect_identifier (_parser : t) = failwith "todo"
 
 let expect_char (parser : t) (c : char) : t * error option =
   match get parser with
-  | None -> (parser, Some UnexpectedEof)
   | Some inner when inner = c -> (advance parser, None)
   | Some inner -> (parser, Some (UnexpectedCharacter inner))
+  | None -> (parser, Some UnexpectedEof)
 
 (* parser -> parser * Entry.raw_entry option *)
 let next_raw_entry (_parser : t) = failwith "todo"
