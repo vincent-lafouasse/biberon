@@ -57,21 +57,21 @@ let init_parser (input : string) : parser option =
   | "" -> None
   | _ -> Some { input; position = 0; ch = Some (String.get input 0) }
 
-(* at some point i'll probably wrap this so it errs instead of throwing
-   but for now i'll just assume everything went ok, i'll learn to deal with
-   exceptions later *)
-let read_file (path : string) : string =
-  In_channel.with_open_bin path In_channel.input_all
-
-let die msg =
-  print_endline msg;
-  exit 1
-
 let () =
+  let die msg =
+    print_endline msg;
+    exit 1
+  in
   let path =
     match Array.length Sys.argv with
     | 2 -> Sys.argv.(1)
     | _ -> die "Usage: biberon refs.bib"
+  in
+  (* at some point i'll probably wrap this so it errs instead of throwing
+   but for now i'll just assume everything went ok, i'll learn to deal with
+   exceptions later *)
+  let read_file (path : string) : string =
+    In_channel.with_open_bin path In_channel.input_all
   in
   let input = read_file path in
   let parser =
