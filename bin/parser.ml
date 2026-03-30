@@ -1,3 +1,5 @@
+[@@@warning "-69-34-37-32"]
+
 type t = { input : string; position : int; ch : char option } [@@deriving show]
 
 let init (input : string) : t option =
