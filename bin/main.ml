@@ -60,7 +60,7 @@ let init_parser (input : string) : parser option =
 (* at some point i'll probably wrap this so it errs instead of throwing
    but for now i'll just assume everything went ok, i'll learn to deal with
    exceptions later *)
-let read_file file = In_channel.with_open_bin file In_channel.input_all
+let read_file path = In_channel.with_open_bin path In_channel.input_all
 
 let die msg =
   print_endline msg;
