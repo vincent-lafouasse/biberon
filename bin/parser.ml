@@ -1,7 +1,12 @@
 [@@@warning "-69-34-37-32"]
 
 type t = { input : string; position : int; ch : char option } [@@deriving show]
-type error = UnexpectedCharacter of char | UnexpectedEof
+
+type error =
+  | UnexpectedCharacter of char
+  | UnexpectedEof
+  | InvalidKeyFirstCharacter of char
+  | InvalidKeyCharacter of char
 
 let init (input : string) : t =
   match input with
