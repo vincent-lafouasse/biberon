@@ -9,6 +9,9 @@ let init (input : string) : t =
 
 let eof (parser : t) : bool = parser.position >= String.length parser.input
 
+let peek (parser : t) : char option =
+  if eof parser then None else Some (String.get parser.input parser.position)
+
 (* TODO: don't forget to update ch *)
 let advance (parser : t) : t =
   if eof parser then parser else { parser with position = parser.position + 1 }
