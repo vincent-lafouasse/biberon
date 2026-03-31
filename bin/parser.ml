@@ -36,11 +36,7 @@ let advance_by parser offset : t =
   { parser with ch }
 ;;
 
-let advance (parser : t) : t =
-  let position = if eof parser then parser.position else parser.position + 1 in
-  let ch = peek parser in
-  { parser with position; ch }
-;;
+let advance (parser : t) : t = advance_by 1
 
 let either f g x = f x || g x
 
