@@ -1,9 +1,9 @@
-type common_fields = {
-  author : string;
-  title : string;
-  year : int;
-  archive : string;
-}
+type common_fields =
+  { author : string
+  ; title : string
+  ; year : int
+  ; archive : string
+  }
 
 type month =
   | Jan
@@ -19,20 +19,20 @@ type month =
   | Nov
   | Dec
 
-type article_fields = {
-  journal : string;
-  volume : int;
-  pages : int * int;
-  number : int;
-  month : month;
-  doi : string;
-}
+type article_fields =
+  { journal : string
+  ; volume : int
+  ; pages : int * int
+  ; number : int
+  ; month : month
+  ; doi : string
+  }
 
-type inproceedings_fields = {
-  booktitle : string;
-  pages : int * int;
-  doi : string;
-}
+type inproceedings_fields =
+  { booktitle : string
+  ; pages : int * int
+  ; doi : string
+  }
 
 type etype = Etype of string
 
@@ -42,4 +42,7 @@ type bib_entry =
   | Other of etype * common_fields
 
 (* intermediate type used by the parser before typed conversion *)
-type raw_entry = { etype : string; fields : (string * string) list }
+type raw_entry =
+  { etype : string
+  ; fields : (string * string) list
+  }

@@ -3,6 +3,7 @@
 let die msg =
   print_endline msg;
   exit 1
+;;
 
 let parser_from_file_or_die (path : string) : Parser.t =
   (* at some point i'll probably wrap this so it errs instead of throwing
@@ -13,5 +14,6 @@ let parser_from_file_or_die (path : string) : Parser.t =
   in
   let input = read_file path in
   Parser.init input
+;;
 
 let () = Parser.__test ()
