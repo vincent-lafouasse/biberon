@@ -50,14 +50,18 @@ let char_is_ident_start : char -> bool = either Char.Ascii.is_letter (Char.equal
 
 let expect_identifier (parser : t) : t * (string, error) result =
   let _start : int = parser.position - 1 in
-  let parser, err = expect_char parser char_is_ident_start in
-  match err with
-  | Some err ->
-    (match err with
-     | UnexpectedEof -> parser, Error UnexpectedEof
-     | UnexpectedCharacter ch -> parser, Error (InvalidKeyFirstCharacter ch)
-     | _ -> failwith "unreachable")
-  | None -> failwith "continue parsing identifier"
+  let parser, first_char_res =
+    match get parser with
+    | None -> parser, Error UnexpectedEof
+    | Some c when char_is_ident_start c -> advance parser, Ok ()
+    | Some c -> parser, Error (InvalidKeyFirstCharacter c)
+  in
+  let _parser, _end_position_res =
+    match first_char_res with
+    | Error err -> parser, err
+    | Ok _ -> failwith "compute end position here"
+  in
+  failwith "todo"
 ;;
 
 (* parser -> parser * Entry.raw_entry option *)
