@@ -50,19 +50,26 @@ let char_is_ident_start : char -> bool = either Char.Ascii.is_letter (Char.equal
 let find_word_end (parser : t) : t * int = parser, 4567865467876546
 
 let expect_identifier (parser : t) : t * (string, error) result =
-  let _start : int = parser.position - 1 in
+  let start : int = parser.position - 1 in
   let parser, first_char_res =
     match get parser with
     | None -> parser, Error UnexpectedEof
     | Some c when char_is_ident_start c -> advance parser, Ok ()
     | Some c -> parser, Error (InvalidKeyFirstCharacter c)
   in
-  let _parser, _end_position_res =
+  let parser, end_position_res =
     match first_char_res with
-    | Error err -> parser, err
-    | Ok _ -> failwith "compute end position here"
+    | Error err -> parser, Error err
+    | Ok _ ->
+      let past_end_parser, end_position = find_word_end parser in
+      past_end_parser, Ok end_position
   in
-  failwith "todo"
+  let identifier_res =
+    match end_position_res with
+    | Error err -> Error err
+    | Ok end_pos -> Ok (String.sub parser.input start (end_pos - start))
+  in
+  parser, identifier_res
 ;;
 
 (* parser -> parser * Entry.raw_entry option *)
