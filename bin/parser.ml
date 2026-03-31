@@ -36,8 +36,8 @@ let either f g x = f x || g x
 
 let expect_char (parser : t) (pred : char -> bool) : t * error option =
   match get parser with
-  | Some inner when pred inner -> advance parser, None
-  | Some inner -> parser, Some (UnexpectedCharacter inner)
+  | Some c when pred c -> advance parser, None
+  | Some c -> parser, Some (UnexpectedCharacter c)
   | None -> parser, Some UnexpectedEof
 ;;
 
