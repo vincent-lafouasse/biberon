@@ -20,6 +20,7 @@ type error =
   | UnexpectedEof
   | InvalidKeyFirstCharacter of char
   | InvalidKeyCharacter of char
+  | Done
 [@@deriving show]
 
 let init (input : string) : t =
@@ -122,7 +123,21 @@ let fn_not f x = not (f x)
 let find_entry = advance_while (fn_not (Char.equal '@'))
 
 (* parser -> parser * Entry.raw_entry option *)
-let next_raw_entry (_parser : t) : t * (Entry.raw_entry, error) result = failwith "todo"
+let next_raw_entry (parser : t) : t * (Entry.raw_entry, error) result =
+  let parser = find_entry parser in
+  let parser, res =
+    let parser, maybe_err = expect_char_eq parser '@' in
+    match maybe_err with
+    | Some err when err = UnexpectedEof -> parser, Error Done
+    | _ -> advance parser, Ok ()
+  in
+  let parser, _etype_res =
+    match res with
+    | Error err -> parser, Error err
+    | Ok () -> expect_identifier parser
+  in
+  failwith "todo"
+;;
 
 let log (parser : t) : unit = print_endline (show parser)
 
