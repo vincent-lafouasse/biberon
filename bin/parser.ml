@@ -40,7 +40,7 @@ let advance parser =
     then parser, false
     else (
       let position = { parser.position with absolute = parser.position.absolute + 1 } in
-      { parser with position })
+      { parser with position }, true)
   in
   let parser =
     if has_advanced && Char.equal '\n'
