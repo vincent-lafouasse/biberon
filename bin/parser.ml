@@ -1,8 +1,17 @@
 [@@@warning "-69-34-37-32"]
 
+type position =
+  { absolute : int
+  ; line : int
+  ; column : int
+  }
+[@@deriving show]
+
+let distance pos_from pos_to = pos_to.absolute - pos_from.absolute
+
 type t =
   { input : string
-  ; position : int
+  ; position : position
   }
 [@@deriving show]
 
@@ -13,18 +22,36 @@ type error =
   | InvalidKeyCharacter of char
 [@@deriving show]
 
-let init (input : string) : t = { input; position = 0 }
+let init (input : string) : t =
+  let position = { absolute = 0; line = 1; column = 0 } in
+  { input; position }
+;;
 
 let len parser = String.length parser.input
 
-let eof parser = parser.position >= len parser
+let at parser position = String.get parser.input position.absolute
+
+let eof parser = parser.position.absolute >= len parser
 
 let get (parser : t) : char option =
-  if eof parser then None else Some (String.get parser.input parser.position)
+  if eof parser then None else Some (at parser parser.position)
+;;
+
+let increment_position position break_line =
+  let absolute = position.absolute + 1 in
+  let line, column =
+    if break_line then position.line + 1, 0 else position.line, position.column + 1
+  in
+  { absolute; line; column }
 ;;
 
 let advance parser =
-  if eof parser then parser else { parser with position = parser.position + 1 }
+  let can_advance = eof parser in
+  let break_line = can_advance && Char.equal '\n' (Option.get (get parser)) in
+  let position =
+    if can_advance then increment_position parser.position break_line else parser.position
+  in
+  { parser with position }
 ;;
 
 let peek (parser : t) : char option =
@@ -52,10 +79,12 @@ let expect_char_eq (parser : t) (c : char) : t * error option =
 let char_is_ident : char -> bool = either Char.Ascii.is_alphanum (Char.equal '_')
 let char_is_ident_start : char -> bool = either Char.Ascii.is_letter (Char.equal '_')
 
-let find_word_end (parser : t) : t * int = parser, 4567865467876546
+let find_word_end (parser : t) : t * position =
+  parser, { absolute = 4567865467876546; line = 0; column = 67 }
+;;
 
 let expect_identifier (parser : t) : t * (string, error) result =
-  let start : int = parser.position - 1 in
+  let start : position = parser.position in
   let parser, first_char_res =
     match get parser with
     | None -> parser, Error UnexpectedEof
@@ -72,7 +101,7 @@ let expect_identifier (parser : t) : t * (string, error) result =
   let identifier_res =
     match end_position_res with
     | Error err -> Error err
-    | Ok end_pos -> Ok (String.sub parser.input start (end_pos - start))
+    | Ok end_pos -> Ok (String.sub parser.input start.absolute (distance start end_pos))
   in
   parser, identifier_res
 ;;
