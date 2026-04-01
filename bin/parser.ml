@@ -128,15 +128,16 @@ let find_entry = advance_while (fn_not (Char.equal '@'))
 exception NoEntryLeft
 exception ExpectedEtype
 
-let expect_char_eq_or_throw parser c = failwith "todo"
+(* unsure if i need this, probably not *)
+let expect_char_eq_or_throw _parser _c = failwith "todo"
 
 let next_raw_entry_inner (parser : t) : t * Entry.raw_entry =
   let parser = find_entry parser in
   let parser = if not (eof parser) then advance parser else raise NoEntryLeft in
   let parser, etype_res = expect_identifier parser in
-  let parser, etype =
+  let _parser, _etype =
     match etype_res with
-    | Ok id -> parser, id
+    | Ok ident -> parser, ident
     | Error _err -> raise ExpectedEtype (* NOTE: maybe more granular *)
   in
   failwith "todo"
@@ -144,7 +145,7 @@ let next_raw_entry_inner (parser : t) : t * Entry.raw_entry =
 
 (* this is the public interface, it should not throw.
    it should catch everthing from _inner and package in error values*)
-let next_raw_entry (parser : t) : t * (Entry.raw_entry option, error) result =
+let next_raw_entry (_parser : t) : t * (Entry.raw_entry option, error) result =
   (* catch exceptions from inner *) failwith "todo"
 ;;
 
