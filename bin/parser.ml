@@ -27,14 +27,30 @@ let init (input : string) : t =
 
 let len parser = String.length parser.input
 
-let eof parser = parser.position >= len parser
+let eof parser = parser.position.absolute >= len parser
 
 let get (parser : t) : char option =
-  if eof parser then None else Some (String.get parser.input parser.position)
+  if eof parser then None else Some (String.get parser.input parser.position.absolute)
 ;;
 
 let advance parser =
-  if eof parser then parser else { parser with position = parser.position + 1 }
+  let passed_character = get parser in
+  let parser, has_advanced =
+    if eof parser
+    then parser, false
+    else (
+      let position = { parser.position with absolute = parser.position.absolute + 1 } in
+      { parser with position })
+  in
+  let parser =
+    if has_advanced && Char.equal '\n'
+    then (
+      let line = parser.position.line + 1 in
+      let position = { parser.position with line; column = 0 } in
+      { parser with position })
+    else parser
+  in
+  parser
 ;;
 
 let peek (parser : t) : char option =
