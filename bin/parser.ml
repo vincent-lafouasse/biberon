@@ -33,7 +33,7 @@ let peek (parser : t) : char option =
 ;;
 
 let rec advance_by parser offset : t =
-  if offset <= 0 then parser else advance_by (advance parser) (offset - 1)
+  if offset > 0 then advance_by (advance parser) (offset - 1) else parser
 ;;
 
 let either f g x = f x || g x
