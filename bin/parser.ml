@@ -12,6 +12,7 @@ type error =
   | UnexpectedEof
   | InvalidKeyFirstCharacter of char
   | InvalidKeyCharacter of char
+[@@deriving show]
 
 let init (input : string) : t =
   match input with
