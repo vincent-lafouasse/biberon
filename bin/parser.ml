@@ -82,6 +82,11 @@ let expect_char_eq (parser : t) (c : char) : t * error option =
 let char_is_ident : char -> bool = either Char.Ascii.is_alphanum (Char.equal '_')
 let char_is_ident_start : char -> bool = either Char.Ascii.is_letter (Char.equal '_')
 
+let rec advance_while pred parser =
+  let continue = (not (eof parser)) && pred (get_unsafe parser) in
+  if continue then advance_while (advance parser) else parser
+;;
+
 let rec find_word_end (parser : t) : t =
   let continue = (not (eof parser)) && char_is_ident (get_unsafe parser) in
   if continue then find_word_end (advance parser) else parser
