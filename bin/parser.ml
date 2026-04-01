@@ -37,6 +37,14 @@ let get (parser : t) : char option =
   if eof parser then None else Some (at parser parser.position)
 ;;
 
+let increment_position position break_line =
+  let absolute = position.absolute + 1 in
+  let line, column =
+    if break_line then position.line + 1, 0 else position.line, position.column + 1
+  in
+  { position with absolute; line; column }
+;;
+
 let advance parser =
   let passed_character = get parser in
   let parser, has_advanced =
