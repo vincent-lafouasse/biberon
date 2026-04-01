@@ -46,24 +46,12 @@ let increment_position position break_line =
 ;;
 
 let advance parser =
-  let passed_character = get parser in
-  let parser, has_advanced =
-    if eof parser
-    then parser, false
-    else (
-      let position = { parser.position with absolute = parser.position.absolute + 1 } in
-      { parser with position }, true)
+  let can_advance = eof parser in
+  let break_line = can_advance && Char.equal '\n' (Option.get (get parser)) in
+  let position =
+    if can_advance then increment_position parser.position break_line else parser.position
   in
-  let passed_character = Option.get passed_character in
-  let parser =
-    if has_advanced && Char.equal '\n' passed_character
-    then (
-      let line = parser.position.line + 1 in
-      let position = { parser.position with line; column = 0 } in
-      { parser with position })
-    else parser
-  in
-  parser
+  { parser with position }
 ;;
 
 let peek (parser : t) : char option =
