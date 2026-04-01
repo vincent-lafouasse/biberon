@@ -88,11 +88,15 @@ let log (parser : t) : unit = print_endline (show parser)
 
 let expect cond msg = if not cond then failwith ("FAIL: " ^ msg)
 
-let expect_eq show a b msg =
-  if a <> b
+let expect_eq expected actual msg show =
+  if expected <> actual
   then (
     let message =
-      Printf.sprintf "FAIL: %s\n  expected: %s\n  got:      %s" msg (show a) (show b)
+      Printf.sprintf
+        "FAIL: %s\n  expected: %s\n  got:      %s"
+        msg
+        (show expected)
+        (show actual)
     in
     let () = Printf.eprintf "FAIL: %s\n" message in
     failwith "assertion failed")
@@ -105,66 +109,66 @@ let show_result r = [%show: (string, error) result] r
 let test_init () =
   let empty = init "" in
   expect (eof empty) "empty: eof";
-  expect_eq show_char_opt (get empty) None "empty: ch=None";
+  expect_eq None (get empty) "empty: ch=None" show_char_opt;
   let p = init "abc" in
-  expect_eq show_char_opt (get p) (Some 'a') "ch=Some 'a'";
+  expect_eq (Some 'a') (get p) "ch=Some 'a'" show_char_opt;
   expect (not (eof p)) "not eof"
 ;;
 
 let test_peek () =
   let p = init "abc" in
-  expect_eq show_char_opt (peek p) (Some 'b') "peek first";
-  expect_eq show_char_opt (peek (advance (advance p))) None "peek at last char";
-  expect_eq show_char_opt (peek (init "")) None "peek at eof"
+  expect_eq (Some 'b') (peek p) "peek first" show_char_opt;
+  expect_eq None (peek (advance (advance p))) "peek at last char" show_char_opt;
+  expect_eq None (peek (init "")) "peek at eof" show_char_opt
 ;;
 
 let test_advance () =
   let p = init "abc" in
   let p1 = advance p in
-  expect_eq show_char_opt (get p1) (Some 'b') "ch=Some 'b'";
-  expect_eq show_char_opt (peek p1) (Some 'c') "peek=Some 'c'";
+  expect_eq (Some 'b') (get p1) "ch=Some 'b'" show_char_opt;
+  expect_eq (Some 'c') (peek p1) "peek=Some 'c'" show_char_opt;
   let p2 = advance p1 in
-  expect_eq show_char_opt (get p2) (Some 'c') "ch=Some 'c'";
-  expect_eq show_char_opt (peek p2) None "peek=None at end";
+  expect_eq (Some 'c') (get p2) "ch=Some 'c'" show_char_opt;
+  expect_eq None (peek p2) "peek=None at end" show_char_opt;
   let p3 = advance p2 in
   expect (eof p3) "eof";
-  expect_eq show_char_opt (get p3) None "ch=None past end";
+  expect_eq None (get p3) "ch=None past end" show_char_opt;
   let p4 = advance p3 in
   expect (p3 = p4) "idempotent at eof"
 ;;
 
 let test_advance_by () =
-  expect_eq show_char_opt (get (advance_by (init "abcde") 3)) (Some 'c') "advance_by 3";
+  expect_eq (Some 'c') (get (advance_by (init "abcde") 3)) "advance_by 3" show_char_opt;
   expect (eof (advance_by (init "abc") 99)) "advance_by past end: eof";
   expect_eq
-    show_char_opt
-    (get (advance_by (init "abc") 0))
     (Some 'a')
+    (get (advance_by (init "abc") 0))
     "advance_by 0: no change"
+    show_char_opt
 ;;
 
 let test_expect_char () =
   let p, err = expect_char (init "abc") Char.Ascii.is_letter in
-  expect_eq show_error_opt err None "match: no error";
-  expect_eq show_char_opt (get p) (Some 'b') "match: advanced";
+  expect_eq None err "match: no error" show_error_opt;
+  expect_eq (Some 'b') (get p) "match: advanced" show_char_opt;
   let p, err = expect_char (init "abc") Char.Ascii.is_digit in
-  expect_eq show_error_opt err (Some (UnexpectedCharacter 'a')) "no match: error";
-  expect_eq show_char_opt (get p) (Some 'a') "no match: not advanced";
+  expect_eq (Some (UnexpectedCharacter 'a')) err "no match: error" show_error_opt;
+  expect_eq (Some 'a') (get p) "no match: not advanced" show_char_opt;
   let _, err = expect_char (init "") Char.Ascii.is_letter in
-  expect_eq show_error_opt err (Some UnexpectedEof) "eof: UnexpectedEof"
+  expect_eq (Some UnexpectedEof) err "eof: UnexpectedEof" show_error_opt
 ;;
 
 let test_expect_identifier () =
   let p, res = expect_identifier (init "abc") in
-  expect_eq show_result res (Ok "abc") "happy: Ok abc";
+  expect_eq (Ok "abc") res "happy: Ok abc" show_result;
   expect (eof p) "happy: parser at end";
   let p, res = expect_identifier (init "foo_bar baz") in
-  expect_eq show_result res (Ok "foo_bar") "stops at space";
-  expect_eq show_char_opt (get p) (Some ' ') "stops at space: next char";
+  expect_eq (Ok "foo_bar") res "stops at space" show_result;
+  expect_eq (Some ' ') (get p) "stops at space: next char" show_char_opt;
   let _, res = expect_identifier (init "1abc") in
-  expect_eq show_result res (Error (InvalidKeyFirstCharacter '1')) "digit start: error";
+  expect_eq (Error (InvalidKeyFirstCharacter '1')) res "digit start: error" show_result;
   let _, res = expect_identifier (init "") in
-  expect_eq show_result res (Error UnexpectedEof) "empty: UnexpectedEof"
+  expect_eq (Error UnexpectedEof) res "empty: UnexpectedEof" show_result
 ;;
 
 let run_test name f =
