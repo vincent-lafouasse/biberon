@@ -121,6 +121,10 @@ let fn_not f x = not (f x)
 
 let find_entry = advance_while (fn_not (Char.equal '@'))
 
+(* all the above is strictly exception free
+   below is my control layer that uses exceptions to coordinate the functional core
+   they are then caught in the exported `next_raw_entry` that wraps it all in a pure function *)
+
 exception NoEntryLeft
 exception ExpectedEtype
 
