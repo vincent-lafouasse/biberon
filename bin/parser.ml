@@ -42,8 +42,9 @@ let advance parser =
       let position = { parser.position with absolute = parser.position.absolute + 1 } in
       { parser with position }, true)
   in
+  let passed_character = Option.get passed_character in
   let parser =
-    if has_advanced && Char.equal '\n'
+    if has_advanced && Char.equal '\n' passed_character
     then (
       let line = parser.position.line + 1 in
       let position = { parser.position with line; column = 0 } in
