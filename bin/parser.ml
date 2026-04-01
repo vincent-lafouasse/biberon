@@ -37,7 +37,7 @@ let advance_by parser offset : t =
   { parser with ch }
 ;;
 
-let advance (parser : t) : t = advance_by 1
+let advance (parser : t) : t = advance_by parser 1
 
 let either f g x = f x || g x
 
