@@ -29,6 +29,8 @@ let init (input : string) : t =
 
 let len parser = String.length parser.input
 
+let at parser position = String.get parser.input position.absolute
+
 let eof parser = parser.position.absolute >= len parser
 
 let get (parser : t) : char option =
