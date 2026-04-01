@@ -128,11 +128,14 @@ let find_entry = advance_while (fn_not (Char.equal '@'))
 exception NoEntryLeft
 exception ExpectedEtype
 
+let expect_char_eq_or_throw parser c = failwith "todo"
+
 let next_raw_entry_inner (parser : t) : t * Entry.raw_entry =
   let parser = find_entry parser in
   let parser = if not (eof parser) then advance parser else raise NoEntryLeft in
   let parser, etype_res = expect_identifier parser in
-  let parser, etype = match etype_res with
+  let parser, etype =
+    match etype_res with
     | Ok id -> parser, id
     | Error _err -> raise ExpectedEtype (* NOTE: maybe more granular *)
   in
