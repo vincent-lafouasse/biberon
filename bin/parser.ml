@@ -3,7 +3,6 @@
 type t =
   { input : string
   ; position : int
-  ; ch : char option
   }
 [@@deriving show]
 
@@ -14,15 +13,15 @@ type error =
   | InvalidKeyCharacter of char
 [@@deriving show]
 
-let init (input : string) : t =
-  match input with
-  | "" -> { input; position = 0; ch = None }
-  | _ -> { input; position = 1; ch = Some (String.get input 0) }
+let init (input : string) : t = { input; position = 0 }
+
+let len parser = String.length parser.input
+
+let eof parser = parser.position >= len parser
+
+let get (parser : t) : char option =
+  if eof parser then None else Some (String.get parser.input parser.position)
 ;;
-
-let eof (parser : t) : bool = parser.position >= String.length parser.input
-
-let get (parser : t) : char option = parser.ch
 
 let peek (parser : t) : char option =
   if eof parser then None else Some (String.get parser.input parser.position)
