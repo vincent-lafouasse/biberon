@@ -20,7 +20,10 @@ type error =
   | InvalidKeyCharacter of char
 [@@deriving show]
 
-let init (input : string) : t = { input; position = 0 }
+let init (input : string) : t =
+  let position = { absolute = 0; line = 1; column = 0 } in
+  { input; position }
+;;
 
 let len parser = String.length parser.input
 
