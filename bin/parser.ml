@@ -32,14 +32,8 @@ let peek (parser : t) : char option =
   get parser
 ;;
 
-let advance_by parser offset : t =
-  let offset = max 0 offset in
-  let new_position = min (parser.position + offset) (String.length parser.input) in
-  let parser = { parser with position = new_position } in
-  let ch =
-    if eof parser then None else Some (String.get parser.input (new_position - 1))
-  in
-  { parser with ch }
+let rec advance_by parser offset : t =
+  if offset <= 0 then parser else advance_by (advance parser) (offset - 1)
 ;;
 
 let either f g x = f x || g x
