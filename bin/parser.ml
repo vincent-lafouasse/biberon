@@ -117,6 +117,10 @@ let expect_identifier (parser : t) : t * (string, error) result =
 
 let skip_whitespace = advance_while Char.Ascii.is_white
 
+let fn_not f x = not (f x)
+
+let find_entry = advance_while (fn_not (Char.equal '@'))
+
 (* parser -> parser * Entry.raw_entry option *)
 let next_raw_entry (_parser : t) : t * (Entry.raw_entry, error) result = failwith "todo"
 
