@@ -110,6 +110,10 @@ let expect_identifier (parser : t) : t * (string, error) result =
   parser, identifier_res
 ;;
 
+let rec skip_whitespace parser =
+  let continue = not (eof parser) && Char.Ascii.is_white (get_unsafe parser) in
+  if continue then skip_whitespace (advance parser) else parser
+
 (* parser -> parser * Entry.raw_entry option *)
 let next_raw_entry (_parser : t) = failwith "todo"
 
