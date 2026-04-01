@@ -83,12 +83,10 @@ let char_is_ident_start : char -> bool = either Char.Ascii.is_letter (Char.equal
 
 let rec advance_while pred parser =
   let continue = (not (eof parser)) && pred (get_unsafe parser) in
-  if continue then advance_while (advance parser) else parser
+  if continue then advance_while pred (advance parser) else parser
 ;;
 
-let find_word_end (parser : t) : t =
-  advance_while either Char.Ascii.is_alphanum (Char.equal '_')
-;;
+let find_word_end = advance_while (either Char.Ascii.is_alphanum (Char.equal '_'))
 
 let expect_identifier (parser : t) : t * (string, error) result =
   let start : position = parser.position in
@@ -113,7 +111,7 @@ let expect_identifier (parser : t) : t * (string, error) result =
   parser, identifier_res
 ;;
 
-let skip_whitespace parser = advance_while Char.Ascii.is_white
+let skip_whitespace = advance_while Char.Ascii.is_white
 
 (* parser -> parser * Entry.raw_entry option *)
 let next_raw_entry (_parser : t) = failwith "todo"
