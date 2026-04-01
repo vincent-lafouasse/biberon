@@ -39,6 +39,10 @@ let get (parser : t) : char option =
 
 let get_unsafe parser : char = Option.get (get parser)
 
+let substring parser start_pos end_pos =
+  String.sub parser.input start_pos.absolute (distance start_pos end_pos)
+;;
+
 let increment_position position break_line =
   let absolute = position.absolute + 1 in
   let line, column =
@@ -106,7 +110,7 @@ let expect_identifier (parser : t) : t * (string, error) result =
   let identifier_res =
     match end_position_res with
     | Error err -> Error err
-    | Ok end_pos -> Ok (String.sub parser.input start.absolute (distance start end_pos))
+    | Ok end_pos -> Ok (substring parser start end_pos)
   in
   parser, identifier_res
 ;;
