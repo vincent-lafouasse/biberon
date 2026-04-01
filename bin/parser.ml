@@ -166,13 +166,10 @@ let test_advance () =
 ;;
 
 let test_advance_by () =
-  expect_eq (Some 'c') (get (advance_by (init "abcde") 3)) "advance_by 3" show_char_opt;
+  expect_eq (Some 'd') (get (advance_by (init "abcde") 3)) "advance_by 3" show_char_opt;
+  expect (eof (advance_by (init "abc") 3)) "advance_by to end: eof";
   expect (eof (advance_by (init "abc") 99)) "advance_by past end: eof";
-  expect_eq
-    (Some 'a')
-    (get (advance_by (init "abc") 0))
-    "advance_by 0: no change"
-    show_char_opt
+  expect_eq (Some 'a') (get (advance_by (init "abc") 0)) "advance_by 0: no change" show_char_opt
 ;;
 
 let test_expect_char () =
