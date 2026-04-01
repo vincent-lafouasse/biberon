@@ -114,7 +114,7 @@ let expect_identifier (parser : t) : t * (string, error) result =
 let skip_whitespace = advance_while Char.Ascii.is_white
 
 (* parser -> parser * Entry.raw_entry option *)
-let next_raw_entry (_parser : t) = failwith "todo"
+let next_raw_entry (_parser : t) : t * (Entry.raw_entry, error) result = failwith "todo"
 
 let log (parser : t) : unit = print_endline (show parser)
 
