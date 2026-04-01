@@ -85,17 +85,75 @@ let next_raw_entry (_parser : t) = failwith "todo"
 
 let log (parser : t) : unit = print_endline (show parser)
 
+let expect cond msg = if not cond then failwith ("FAIL: " ^ msg)
+
+let test_init () =
+  let empty = init "" in
+  expect (eof empty) "empty: eof";
+  expect (get empty = None) "empty: ch=None";
+  let p = init "abc" in
+  expect (get p = Some 'a') "ch=Some 'a'";
+  expect (not (eof p)) "not eof"
+;;
+
+let test_peek () =
+  let p = init "abc" in
+  expect (peek p = Some 'b') "peek first";
+  expect (peek (advance (advance p)) = None) "peek at last char";
+  expect (peek (init "") = None) "peek at eof"
+;;
+
+let test_advance () =
+  let p = init "abc" in
+  let p1 = advance p in
+  expect (get p1 = Some 'b') "ch=Some 'b'";
+  expect (peek p1 = Some 'c') "peek=Some 'c'";
+  let p2 = advance p1 in
+  expect (get p2 = Some 'c') "ch=Some 'c'";
+  expect (peek p2 = None) "peek=None at end";
+  let p3 = advance p2 in
+  expect (eof p3) "eof";
+  expect (get p3 = None) "ch=None past end";
+  let p4 = advance p3 in
+  expect (p3 = p4) "idempotent at eof"
+;;
+
+let test_advance_by () =
+  expect (get (advance_by (init "abcde") 3) = Some 'c') "advance_by 3";
+  expect (eof (advance_by (init "abc") 99)) "advance_by past end: eof";
+  expect (get (advance_by (init "abc") 0) = Some 'a') "advance_by 0: no change"
+;;
+
+let test_expect_char () =
+  let p, err = expect_char (init "abc") Char.Ascii.is_letter in
+  expect (err = None) "match: no error";
+  expect (get p = Some 'b') "match: advanced";
+  let p, err = expect_char (init "abc") Char.Ascii.is_digit in
+  expect (err = Some (UnexpectedCharacter 'a')) "no match: error";
+  expect (get p = Some 'a') "no match: not advanced";
+  let _, err = expect_char (init "") Char.Ascii.is_letter in
+  expect (err = Some UnexpectedEof) "eof: UnexpectedEof"
+;;
+
+let test_expect_identifier () =
+  let p, res = expect_identifier (init "abc") in
+  expect (res = Ok "abc") "happy: Ok abc";
+  expect (eof p) "happy: parser at end";
+  let p, res = expect_identifier (init "foo_bar baz") in
+  expect (res = Ok "foo_bar") "stops at space";
+  expect (get p = Some ' ') "stops at space: next char";
+  let _, res = expect_identifier (init "1abc") in
+  expect (res = Error (InvalidKeyFirstCharacter '1')) "digit start: error";
+  let _, res = expect_identifier (init "") in
+  expect (res = Error UnexpectedEof) "empty: UnexpectedEof"
+;;
+
 let __test () =
-  let input = "abc" in
-  let parser = init input in
-  let _ = log parser in
-  let parser = advance parser in
-  let _ = log parser in
-  let parser = advance parser in
-  let _ = log parser in
-  let parser = advance parser in
-  let _ = log parser in
-  let parser = advance parser in
-  let _ = log parser in
-  ()
+  test_init ();
+  test_peek ();
+  test_advance ();
+  test_advance_by ();
+  test_expect_char ();
+  test_expect_identifier ();
+  print_endline "all tests passed"
 ;;
