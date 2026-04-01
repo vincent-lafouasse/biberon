@@ -37,6 +37,8 @@ let get (parser : t) : char option =
   if eof parser then None else Some (at parser parser.position)
 ;;
 
+let get_unsafe parser : char = Option.get (get parser)
+
 let increment_position position break_line =
   let absolute = position.absolute + 1 in
   let line, column =
