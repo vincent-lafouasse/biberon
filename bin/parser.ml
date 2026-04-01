@@ -1,15 +1,15 @@
 [@@@warning "-69-34-37-32"]
 
-type t =
-  { input : string
-  ; position : int
-  }
-[@@deriving show]
-
 type position =
   { absolute : int
   ; line : int
   ; column : int
+  }
+[@@deriving show]
+
+type t =
+  { input : string
+  ; position : position
   }
 [@@deriving show]
 
