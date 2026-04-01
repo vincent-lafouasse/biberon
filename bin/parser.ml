@@ -121,18 +121,16 @@ let fn_not f x = not (f x)
 
 let find_entry = advance_while (fn_not (Char.equal '@'))
 
+exception NoEntryLeft
+exception ExpectedEtype
+
 let next_raw_entry_inner (parser : t) : t * Entry.raw_entry =
   let parser = find_entry parser in
-  let parser, entry_present =
-    let parser, maybe_err = expect_char_eq parser '@' in
-    match maybe_err with
-    | Some err when err = UnexpectedEof -> parser, false
-    | _ -> advance parser, true
-  in
-  let parser, _etype_res =
-    match entry_present with
-    | Error err -> parser, Error err
-    | Ok () -> expect_identifier parser
+  let parser = if not (eof parser) then advance parser else raise NoEntryLeft in
+  let parser, etype_res = expect_identifier parser in
+  let parser, etype = match etype_res with
+    | Ok id -> parser, id
+    | Error _err -> raise ExpectedEtype (* NOTE: maybe more granular *)
   in
   failwith "todo"
 ;;
