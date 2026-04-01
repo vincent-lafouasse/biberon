@@ -142,6 +142,8 @@ let next_raw_entry_inner (parser : t) : t * Entry.raw_entry =
   failwith "todo"
 ;;
 
+(* this is the public interface, it should not throw.
+   it should catch everthing from _inner and package in error values*)
 let next_raw_entry (parser : t) : t * (Entry.raw_entry option, error) result =
   (* catch exceptions from inner *) failwith "todo"
 ;;
