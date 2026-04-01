@@ -148,12 +148,16 @@ let test_expect_identifier () =
   expect (res = Error UnexpectedEof) "empty: UnexpectedEof"
 ;;
 
+let run_test name f =
+  f ();
+  print_endline (name ^ " ok")
+;;
+
 let __test () =
-  test_init ();
-  test_peek ();
-  test_advance ();
-  test_advance_by ();
-  test_expect_char ();
-  test_expect_identifier ();
-  print_endline "all tests passed"
+  run_test "init" test_init;
+  run_test "peek" test_peek;
+  run_test "advance" test_advance;
+  run_test "advance_by" test_advance_by;
+  run_test "expect_char" test_expect_char;
+  run_test "expect_identifier" test_expect_identifier
 ;;
