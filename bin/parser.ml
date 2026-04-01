@@ -34,7 +34,7 @@ let at parser position = String.get parser.input position.absolute
 let eof parser = parser.position.absolute >= len parser
 
 let get (parser : t) : char option =
-  if eof parser then None else Some (String.get parser.input parser.position.absolute)
+  if eof parser then None else Some (at parser parser.position)
 ;;
 
 let advance parser =
