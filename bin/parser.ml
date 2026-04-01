@@ -42,7 +42,7 @@ let increment_position position break_line =
   let line, column =
     if break_line then position.line + 1, 0 else position.line, position.column + 1
   in
-  { position with absolute; line; column }
+  { absolute; line; column }
 ;;
 
 let advance parser =
