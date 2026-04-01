@@ -48,8 +48,9 @@ let increment_position position break_line =
 let advance parser =
   let can_advance = not (eof parser) in
   let break_line = can_advance && Char.equal '\n' (Option.get (get parser)) in
+  let position = parser.position in
   let position =
-    if can_advance then increment_position parser.position break_line else parser.position
+    if can_advance then increment_position position break_line else position
   in
   { parser with position }
 ;;
