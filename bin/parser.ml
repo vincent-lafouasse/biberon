@@ -81,10 +81,12 @@ let expect_char_eq (parser : t) (c : char) : t * error option =
 let char_is_ident : char -> bool = either Char.Ascii.is_alphanum (Char.equal '_')
 let char_is_ident_start : char -> bool = either Char.Ascii.is_letter (Char.equal '_')
 
-let find_word_end (parser : t) : t * int = parser, 4567865467876546
+let find_word_end (parser : t) : t * position =
+  parser, { absolute = 4567865467876546; line = 0; column = 67 }
+;;
 
 let expect_identifier (parser : t) : t * (string, error) result =
-  let start : int = parser.position - 1 in
+  let start : position = parser.position in
   let parser, first_char_res =
     match get parser with
     | None -> parser, Error UnexpectedEof
@@ -101,7 +103,7 @@ let expect_identifier (parser : t) : t * (string, error) result =
   let identifier_res =
     match end_position_res with
     | Error err -> Error err
-    | Ok end_pos -> Ok (String.sub parser.input start (end_pos - start))
+    | Ok end_pos -> Ok (String.sub parser.input start.absolute (distance start end_pos))
   in
   parser, identifier_res
 ;;
