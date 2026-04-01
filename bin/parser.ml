@@ -6,6 +6,13 @@ type t =
   }
 [@@deriving show]
 
+type position =
+  { absolute : int
+  ; line : int
+  ; column : int
+  }
+[@@deriving show]
+
 type error =
   | UnexpectedCharacter of char
   | UnexpectedEof
