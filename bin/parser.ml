@@ -23,8 +23,13 @@ let get (parser : t) : char option =
   if eof parser then None else Some (String.get parser.input parser.position)
 ;;
 
+let advance parser =
+  if eof parser then parser else { parser with position = parser.position + 1 }
+;;
+
 let peek (parser : t) : char option =
-  if eof parser then None else Some (String.get parser.input parser.position)
+  let parser = advance parser in
+  get parser
 ;;
 
 let advance_by parser offset : t =
@@ -36,8 +41,6 @@ let advance_by parser offset : t =
   in
   { parser with ch }
 ;;
-
-let advance (parser : t) : t = advance_by parser 1
 
 let either f g x = f x || g x
 
