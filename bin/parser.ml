@@ -3,7 +3,6 @@
 type t =
   { input : string
   ; position : int
-  ; ch : char option
   }
 [@@deriving show]
 
@@ -14,31 +13,28 @@ type error =
   | InvalidKeyCharacter of char
 [@@deriving show]
 
-let init (input : string) : t =
-  match input with
-  | "" -> { input; position = 0; ch = None }
-  | _ -> { input; position = 1; ch = Some (String.get input 0) }
-;;
+let init (input : string) : t = { input; position = 0 }
 
-let eof (parser : t) : bool = parser.position >= String.length parser.input
+let len parser = String.length parser.input
 
-let get (parser : t) : char option = parser.ch
+let eof parser = parser.position >= len parser
 
-let peek (parser : t) : char option =
+let get (parser : t) : char option =
   if eof parser then None else Some (String.get parser.input parser.position)
 ;;
 
-let advance_by parser offset : t =
-  let offset = max 0 offset in
-  let new_position = min (parser.position + offset) (String.length parser.input) in
-  let parser = { parser with position = new_position } in
-  let ch =
-    if eof parser then None else Some (String.get parser.input (new_position - 1))
-  in
-  { parser with ch }
+let advance parser =
+  if eof parser then parser else { parser with position = parser.position + 1 }
 ;;
 
-let advance (parser : t) : t = advance_by parser 1
+let peek (parser : t) : char option =
+  let parser = advance parser in
+  get parser
+;;
+
+let rec advance_by parser offset : t =
+  if offset > 0 then advance_by (advance parser) (offset - 1) else parser
+;;
 
 let either f g x = f x || g x
 
