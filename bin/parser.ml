@@ -82,6 +82,8 @@ let next_raw_entry (_parser : t) = failwith "todo"
 
 let log (parser : t) : unit = print_endline (show parser)
 
+(* ----------tests---------- *)
+
 let expect cond msg = if not cond then failwith ("FAIL: " ^ msg)
 
 let expect_eq expected actual msg show =
