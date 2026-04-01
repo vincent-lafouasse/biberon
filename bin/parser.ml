@@ -7,7 +7,7 @@ type position =
   }
 [@@deriving show]
 
-let distance from to = to.absolute - from.absolute
+let distance pos_from pos_to = pos_to.absolute - pos_from.absolute
 
 type t =
   { input : string
