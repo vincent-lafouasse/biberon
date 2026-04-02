@@ -16,6 +16,6 @@ let validate_entry (_raw_entry : Entry.raw_entry) : (Entry.bib_entry, error) res
   failwith "todo"
 ;;
 
-let validate_entry (_raw_lib : Entry.raw_entry array) : (entry array, error) result =
+let validate_entry (_raw_lib : Entry.raw_entry array) : (Entry.t array, error) result =
   failwith "todo"
 ;;
