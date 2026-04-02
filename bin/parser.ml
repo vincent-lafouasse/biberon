@@ -43,7 +43,7 @@ let expect_token parser expected : t * (unit, error Position.located) result =
 
 (* main export probably *)
 let parse (input : string) : (Entry.raw_entry Array.t, error Position.located) result =
-  let parser_res = init input in
+  let _parser_res = init input in
   (* gather entries while parser_res is ok *)
   failwith "unimplemented"
 ;;
