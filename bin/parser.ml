@@ -401,6 +401,81 @@ let test_expect_field () =
     [%show: error option]
 ;;
 
+let show_raw_entry_result r = [%show: (Entry.raw_entry, error Position.located) result] r
+
+let test_expect_entry () =
+  (* full article entry *)
+  let full_article = {|@article{doe2024, author = "Doe, J.", year = 2024}|} in
+  let _p, res = expect_entry (make_parser full_article) in
+  expect_eq
+    (Ok
+       { Entry.etype = Entry.Etype "article"
+       ; tag = Entry.Tag "doe2024"
+       ; fields =
+           [| Entry.Key "author", Entry.Value.String "Doe, J."
+            ; Entry.Key "year", Entry.Value.Integer 2024
+           |]
+       })
+    res
+    "full article entry"
+    show_raw_entry_result;
+  (* misc with no fields *)
+  let empty_misc = {|@misc{key,}|} in
+  let _p, res = expect_entry (make_parser empty_misc) in
+  expect_eq
+    (Ok { Entry.etype = Entry.Etype "misc"; tag = Entry.Tag "key"; fields = [||] })
+    res
+    "misc with no fields"
+    show_raw_entry_result;
+  (* parser advances past the closing brace *)
+  let two_entries = {|@misc{a,} @misc{b,}|} in
+  let p, res = expect_entry (make_parser two_entries) in
+  expect (Result.is_ok res) "two entries: first ok";
+  (match get p with
+   | Token.AtSign, _ -> ()
+   | tok, _ ->
+     expect false (Printf.sprintf "two entries: expected @ next, got %s" (Token.show tok)));
+  (* error: missing @ *)
+  let _p, res = expect_entry (make_parser {|article{key,}|}) in
+  let err_variant =
+    match res with
+    | Error (e, _) -> Some e
+    | Ok _ -> None
+  in
+  expect_eq
+    (Some (ExpectedToken (Expected Token.AtSign, Actual (Token.Identifier "article"))))
+    err_variant
+    "missing @: error variant"
+    [%show: error option];
+  (* error: missing etype *)
+  let _p, res = expect_entry (make_parser "@{key,}") in
+  let err_variant =
+    match res with
+    | Error (e, _) -> Some e
+    | Ok _ -> None
+  in
+  expect_eq
+    (Some (ExpectedEtype (Actual Token.Lbrace)))
+    err_variant
+    "missing etype: error variant"
+    [%show: error option];
+  (* error: missing lbrace *)
+  let _p, res = expect_entry (make_parser "@misc key,}") in
+  let err_variant =
+    match res with
+    | Error (e, _) -> Some e
+    | Ok _ -> None
+  in
+  expect_eq
+    (Some (ExpectedToken (Expected Token.Lbrace, Actual (Token.Identifier "key"))))
+    err_variant
+    "missing lbrace: error variant"
+    [%show: error option];
+  (* error: missing rbrace *)
+  let _p, res = expect_entry (make_parser "@misc{key,") in
+  expect (Result.is_error res) "missing rbrace is error"
+;;
+
 let run_test name f =
   f ();
   print_endline (name ^ " ok")
@@ -414,5 +489,6 @@ let __test () =
   run_test "expect_etype" test_expect_etype;
   run_test "expect_key" test_expect_key;
   run_test "expect_value" test_expect_value;
-  run_test "expect_field" test_expect_field
+  run_test "expect_field" test_expect_field;
+  run_test "expect_entry" test_expect_entry
 ;;
