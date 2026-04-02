@@ -137,9 +137,6 @@ type token =
 
 exception ExpectedToken of token (* maybe package the parser/position as well *)
 
-(* unsure if i need this, probably not *)
-let expect_char_eq_or_throw _parser _c = failwith "todo"
-
 let next_raw_entry_inner (parser : t) : t * Entry.raw_entry =
   let parser = find_entry parser in
   (* parser is now either i) on '@' or ii) EOF *)
