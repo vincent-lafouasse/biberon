@@ -6,12 +6,7 @@ type t =
   }
 [@@deriving show]
 
-type error =
-  | UnexpectedCharacter of char
-  | UnexpectedEof
-  | InvalidKeyFirstCharacter of char
-  | InvalidKeyCharacter of char
-[@@deriving show]
+type error = UnterminatedString [@@deriving show]
 
 let init (input : string) : t =
   let position : Position.t = { absolute = 0; line = 1; column = 0 } in
