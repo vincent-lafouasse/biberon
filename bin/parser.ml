@@ -83,13 +83,23 @@ let test_expect_token_match () =
   expect_eq (Ok ()) res "equalsign matches" show_unit_result
 ;;
 
+let pos a l c : Position.t = { absolute = a; line = l; column = c }
+
 let test_expect_token_mismatch () =
   let p = make_parser "{" in
   let _p, res = expect_token p Token.AtSign in
-  expect (Result.is_error res) "lbrace does not match atsign";
+  expect_eq
+    (Error (token_mismatch Token.AtSign Token.Lbrace, pos 0 1 0))
+    res
+    "lbrace does not match atsign"
+    show_unit_result;
   let p = make_parser "foo" in
   let _p, res = expect_token p Token.Lbrace in
-  expect (Result.is_error res) "ident does not match lbrace"
+  expect_eq
+    (Error (token_mismatch Token.Lbrace (Token.Identifier "foo"), pos 0 1 0))
+    res
+    "ident does not match lbrace"
+    show_unit_result
 ;;
 
 let test_expect_token_advances () =
@@ -103,7 +113,11 @@ let test_expect_token_advances () =
 let test_expect_token_eof () =
   let p = make_parser "" in
   let _p, res = expect_token p Token.AtSign in
-  expect (Result.is_error res) "eof does not match atsign"
+  expect_eq
+    (Error (token_mismatch Token.AtSign Token.Eof, pos 0 1 0))
+    res
+    "eof does not match atsign"
+    show_unit_result
 ;;
 
 let run_test name f =
