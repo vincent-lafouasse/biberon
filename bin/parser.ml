@@ -153,10 +153,16 @@ let expect_entry parser : t * (Entry.raw_entry, error Position.located) result =
     | Ok () -> expect_tag parser
   in
   let parser = if Result.is_ok tag_res then past_tag_parser else parser in
-  let past_fields_parser, fields_res =
+  let past_tag_comma_parser, comma_res =
     match tag_res with
     | Error (err, loc) -> parser, Error (err, loc)
-    | Ok _tag -> expect_field_list parser
+    | Ok _tag -> expect_token parser Token.Comma
+  in
+  let parser = if Result.is_ok comma_res then past_tag_comma_parser else parser in
+  let past_fields_parser, fields_res =
+    match comma_res with
+    | Error (err, loc) -> parser, Error (err, loc)
+    | Ok () -> expect_field_list parser
   in
   let parser = if Result.is_ok fields_res then past_fields_parser else parser in
   let past_rbrace_parser, rbrace_res =
@@ -405,7 +411,7 @@ let show_raw_entry_result r = [%show: (Entry.raw_entry, error Position.located) 
 
 let test_expect_entry () =
   (* full article entry *)
-  let full_article = {|@article{doe2024, author = "Doe, J.", year = 2024}|} in
+  let full_article = {|@article{doe2024, author = "Doe, J.", year = 2024,}|} in
   let _p, res = expect_entry (make_parser full_article) in
   expect_eq
     (Ok
@@ -461,6 +467,7 @@ let test_expect_entry () =
     [%show: error option];
   (* error: missing lbrace *)
   let _p, res = expect_entry (make_parser "@misc key,}") in
+  (* note: no trailing comma needed since parsing fails before fields *)
   let err_variant =
     match res with
     | Error (e, _) -> Some e
