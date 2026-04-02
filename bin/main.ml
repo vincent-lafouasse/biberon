@@ -6,3 +6,4 @@ let die msg =
 ;;
 
 let () = Lexer.__test ()
+let () = Parser.__test ()
