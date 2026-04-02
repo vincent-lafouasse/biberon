@@ -37,7 +37,7 @@ let advance parser =
 let expect_token parser expected : t * (unit, error Position.located) result =
   let actual, location = get parser in
   match actual with
-  | expected -> advance parser, Ok ()
+  | tok when tok = expected -> advance parser, Ok ()
   | _ -> parser, Error (token_mismatch expected actual, location)
 ;;
 
