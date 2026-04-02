@@ -250,6 +250,72 @@ let test_expect_value () =
     show_value_result
 ;;
 
+let show_field_result r = [%show: (Entry.field, error Position.located) result] r
+
+let test_expect_field () =
+  (* happy paths *)
+  let _p, res = expect_field (make_parser {|author = "Doe, J."|}) in
+  expect_eq
+    (Ok (Entry.Key "author", Entry.Value.String "Doe, J."))
+    res
+    "string field"
+    show_field_result;
+  let _p, res = expect_field (make_parser "year = 2024") in
+  expect_eq
+    (Ok (Entry.Key "year", Entry.Value.Integer 2024))
+    res
+    "integer field"
+    show_field_result;
+  let _p, res = expect_field (make_parser "reviewed = true") in
+  expect_eq
+    (Ok (Entry.Key "reviewed", Entry.Value.Boolean true))
+    res
+    "boolean field"
+    show_field_result;
+  (* parser advances past the whole field *)
+  let p, res = expect_field (make_parser {|a = "x", b = "y"|}) in
+  expect (Result.is_ok res) "advances: no error";
+  (match get p with
+   | Token.Comma, _ -> ()
+   | tok, _ ->
+     expect
+       false
+       (Printf.sprintf "advances: expected comma next, got %s" (Token.show tok)));
+  let err_variant res =
+    match res with
+    | Error (e, _) -> Some e
+    | Ok _ -> None
+  in
+  (* error: missing key *)
+  let _p, res = expect_field (make_parser {|= "value"|}) in
+  expect_eq
+    (Some (ExpectedKey (Actual Token.EqualSign)))
+    (err_variant res)
+    "missing key: error variant"
+    [%show: error option];
+  (* error: missing equals *)
+  let _p, res = expect_field (make_parser {|key "value"|}) in
+  expect_eq
+    (Some (ExpectedToken (Expected Token.EqualSign, Actual (Token.Value (Token.Value.String "value")))))
+    (err_variant res)
+    "missing equals: error variant"
+    [%show: error option];
+  (* error: missing value *)
+  let _p, res = expect_field (make_parser "key =") in
+  expect_eq
+    (Some (ExpectedValue (Actual Token.Eof)))
+    (err_variant res)
+    "missing value: error variant"
+    [%show: error option];
+  (* error: eof *)
+  let _p, res = expect_field (make_parser "") in
+  expect_eq
+    (Some (ExpectedKey (Actual Token.Eof)))
+    (err_variant res)
+    "eof: error variant"
+    [%show: error option]
+;;
+
 let run_test name f =
   f ();
   print_endline (name ^ " ok")
@@ -262,5 +328,6 @@ let __test () =
   run_test "expect_token: eof" test_expect_token_eof;
   run_test "expect_etype" test_expect_etype;
   run_test "expect_key" test_expect_key;
-  run_test "expect_value" test_expect_value
+  run_test "expect_value" test_expect_value;
+  run_test "expect_field" test_expect_field
 ;;
