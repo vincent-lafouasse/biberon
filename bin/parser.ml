@@ -101,6 +101,21 @@ let expect_field parser : t * (Entry.field, error Position.located) result =
     parser, Ok (key, value)
 ;;
 
+let expect_field_trailing_comma parser : t * (Entry.field, error Position.located) result =
+  let past_field_parser, field_res = expect_field parser in
+  let parser = if Result.is_ok field_res then past_field_parser else parser in
+  let past_comma_parser, comma_res =
+    match field_res with
+    | Error (err, loc) -> parser, Error (err, loc)
+    | Ok _ -> expect_token parser Token.Comma
+  in
+  match comma_res with
+  | Error (err, loc) -> parser, Error (err, loc)
+  | Ok () ->
+    let field = Result.get_ok field_res in
+    parser, Ok field
+;;
+
 let expect_entry parser : t * (Entry.raw_entry, error Position.located) result =
   let past_atsign_parser, atsign_res = expect_token parser Token.AtSign in
   let parser = if Result.is_ok atsign_res then past_atsign_parser else parser in
