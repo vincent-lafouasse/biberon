@@ -101,6 +101,25 @@ let expect_field parser : t * (Entry.field, error Position.located) result =
     parser, Ok (key, value)
 ;;
 
+let expect_entry parser : t * (Entry.raw_entry, error Position.located) result =
+  let past_atsign_parser, atsign_res = expect_token parser Token.AtSign in
+  let parser = if Result.is_ok atsign_res then past_atsign_parser else parser in
+  let past_lbrace_parser, lbrace_res = expect_token parser Token.Lbrace in
+  let parser = if Result.is_ok lbrace_res then past_lbrace_parser else parser in
+  let past_tag_parser, tag_res = expect_tag parser in
+  let parser = if Result.is_ok tag_res then past_tag_parser else parser in
+  (* parse the fields here *)
+  let past_rbrace_parser, rbrace_res = expect_token parser Token.Rbrace in
+  let parser = if Result.is_ok tag_res then past_rbrace_parser else parser in
+  match rbrace_res with
+  | Error (err, loc) -> parser, Error (err, loc)
+  | Ok () ->
+    let tag = Result.get_ok tag_res in
+    let fields : Entry.field list = [] in
+    (* TODO: actually parse the fields *)
+    failwith "unimplemented"
+;;
+
 (* main export probably *)
 let parse (input : string) : (Entry.raw_entry Array.t, error Position.located) result =
   let _parser_res = init input in
