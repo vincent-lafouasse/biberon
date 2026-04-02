@@ -103,7 +103,7 @@ let next_token (lexer : t) : t * (Token.t Position.located, error Position.locat
      | '=' -> advance lexer, Ok (Token.EqualSign, lexer.position)
      | '"' -> failwith "tokenize string"
      | c when Char.Ascii.is_digit c -> failwith "tokenize number"
-     | c when char_is_ident_start c -> failwith "tokenize identifier (or true/false)"
+     | c when char_is_ident_start c -> scan_identifier_or_bool lexer
      | _ -> failwith "todo")
 ;;
 
