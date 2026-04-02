@@ -56,16 +56,15 @@ let expect_key parser : t * (Entry.key, error Position.located) result =
 ;;
 
 let expect_value parser : t * (Entry.Value.t, error Position.located) result =
+  let transmute value =
+    match value with
+    | Token.Value.Boolean b -> Entry.Value.Boolean b
+    | Token.Value.Integer i -> Entry.Value.Integer i
+    | Token.Value.String s -> Entry.Value.String s
+  in
   let actual, location = get parser in
   match actual with
-  | Token.Value value ->
-    let value =
-      match value with
-      | Token.Value.Boolean b -> Entry.Value.Boolean b
-      | Token.Value.Integer i -> Entry.Value.Integer i
-      | Token.Value.String s -> Entry.Value.String s
-    in
-    advance parser, Ok value
+  | Token.Value value -> advance parser, Ok (transmute value)
   | _ -> parser, Error (ExpectedValue (Actual actual), location)
 ;;
 
