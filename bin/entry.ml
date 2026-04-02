@@ -56,8 +56,10 @@ module Value = struct
   [@@deriving show]
 end
 
+type field = key * Value.t [@@deriving show]
+
 type raw_entry =
   { etype : etype
-  ; fields : (key * Value.t) list
+  ; fields : field list
   }
 [@@deriving show]
