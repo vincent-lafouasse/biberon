@@ -36,7 +36,7 @@ type month =
 type article_fields =
   { journal : string
   ; volume : int
-  ; pages : int * int
+  ; pages : string * string
   ; number : int
   ; month : month
   ; doi : string
@@ -45,7 +45,7 @@ type article_fields =
 
 type inproceedings_fields =
   { booktitle : string
-  ; pages : int * int
+  ; pages : string * string
   ; doi : string
   }
 [@@deriving show]
