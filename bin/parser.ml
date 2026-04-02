@@ -69,8 +69,26 @@ let expect_value parser : t * (Entry.Value.t, error Position.located) result =
 ;;
 
 let expect_field parser : t * (Entry.field, error Position.located) result =
-  let _ = parser in
-  failwith "unimplemented"
+  let past_key_parser, key_res = expect_key parser in
+  let parser = if Result.is_ok key_res then past_key_parser else parser in
+  let past_equal_parser, equalsign_res =
+    match key_res with
+    | Ok _ -> expect_token parser Token.EqualSign
+    | Error (err, loc) -> parser, Error (err, loc)
+  in
+  let parser = if Result.is_ok equalsign_res then past_equal_parser else parser in
+  let past_value_parser, value_res =
+    match equalsign_res with
+    | Ok () -> expect_value parser
+    | Error (err, loc) -> parser, Error (err, loc)
+  in
+  let parser = if Result.is_ok value_res then past_value_parser else parser in
+  match value_res with
+  | Error (err, loc) -> parser, Error (err, loc)
+  | Ok value ->
+    (* should be safe *)
+    let key = Result.get_ok key_res in
+    parser, Ok (key, value)
 ;;
 
 (* main export probably *)
