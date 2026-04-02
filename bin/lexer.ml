@@ -67,29 +67,6 @@ let rec advance_while pred lexer =
 
 let find_word_end = advance_while (either Char.Ascii.is_alphanum (Char.equal '_'))
 
-let expect_identifier (lexer : t) : t * (string, error) result =
-  let start : Position.t = lexer.position in
-  let lexer, first_char_res =
-    match get lexer with
-    | None -> lexer, Error UnexpectedEof
-    | Some c when char_is_ident_start c -> advance lexer, Ok ()
-    | Some c -> lexer, Error (InvalidKeyFirstCharacter c)
-  in
-  let lexer, end_position_res =
-    match first_char_res with
-    | Error err -> lexer, Error err
-    | Ok _ ->
-      let past_end_lexer = find_word_end lexer in
-      past_end_lexer, Ok past_end_lexer.position
-  in
-  let identifier_res =
-    match end_position_res with
-    | Error err -> Error err
-    | Ok end_pos -> Ok (substring lexer start end_pos)
-  in
-  lexer, identifier_res
-;;
-
 let skip_whitespace = advance_while Char.Ascii.is_white
 
 let fn_not f x = not (f x)
@@ -163,19 +140,6 @@ let test_advance_by () =
     show_char_opt
 ;;
 
-let test_expect_identifier () =
-  let p, res = expect_identifier (init "abc") in
-  expect_eq (Ok "abc") res "happy: Ok abc" show_result;
-  expect (eof p) "happy: lexer at end";
-  let p, res = expect_identifier (init "foo_bar baz") in
-  expect_eq (Ok "foo_bar") res "stops at space" show_result;
-  expect_eq (Some ' ') (get p) "stops at space: next char" show_char_opt;
-  let _, res = expect_identifier (init "1abc") in
-  expect_eq (Error (InvalidKeyFirstCharacter '1')) res "digit start: error" show_result;
-  let _, res = expect_identifier (init "") in
-  expect_eq (Error UnexpectedEof) res "empty: UnexpectedEof" show_result
-;;
-
 let run_test name f =
   f ();
   print_endline (name ^ " ok")
@@ -185,6 +149,5 @@ let __test () =
   run_test "init" test_init;
   run_test "peek" test_peek;
   run_test "advance" test_advance;
-  run_test "advance_by" test_advance_by;
-  run_test "expect_identifier" test_expect_identifier
+  run_test "advance_by" test_advance_by
 ;;
