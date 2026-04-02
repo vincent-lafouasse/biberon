@@ -58,17 +58,6 @@ let rec advance_by lexer offset : t =
 
 let either f g x = f x || g x
 
-let expect_char (lexer : t) (pred : char -> bool) : t * error option =
-  match get lexer with
-  | Some c when pred c -> advance lexer, None
-  | Some c -> lexer, Some (UnexpectedCharacter c)
-  | None -> lexer, Some UnexpectedEof
-;;
-
-let expect_char_eq (lexer : t) (c : char) : t * error option =
-  expect_char lexer (Char.equal c)
-;;
-
 let char_is_ident_start : char -> bool = either Char.Ascii.is_letter (Char.equal '_')
 
 let rec advance_while pred lexer =
@@ -174,17 +163,6 @@ let test_advance_by () =
     show_char_opt
 ;;
 
-let test_expect_char () =
-  let p, err = expect_char (init "abc") Char.Ascii.is_letter in
-  expect_eq None err "match: no error" show_error_opt;
-  expect_eq (Some 'b') (get p) "match: advanced" show_char_opt;
-  let p, err = expect_char (init "abc") Char.Ascii.is_digit in
-  expect_eq (Some (UnexpectedCharacter 'a')) err "no match: error" show_error_opt;
-  expect_eq (Some 'a') (get p) "no match: not advanced" show_char_opt;
-  let _, err = expect_char (init "") Char.Ascii.is_letter in
-  expect_eq (Some UnexpectedEof) err "eof: UnexpectedEof" show_error_opt
-;;
-
 let test_expect_identifier () =
   let p, res = expect_identifier (init "abc") in
   expect_eq (Ok "abc") res "happy: Ok abc" show_result;
@@ -208,6 +186,5 @@ let __test () =
   run_test "peek" test_peek;
   run_test "advance" test_advance;
   run_test "advance_by" test_advance_by;
-  run_test "expect_char" test_expect_char;
   run_test "expect_identifier" test_expect_identifier
 ;;
