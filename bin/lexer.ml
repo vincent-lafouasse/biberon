@@ -74,6 +74,7 @@ let fn_not f x = not (f x)
 (* main export: *)
 let next_token (lexer : t) : t * (Token.t Position.located, error Position.located) result
   =
+  let lexer = skip_whitespace lexer in
   match get lexer with
   | None -> lexer, Ok (Token.Eof, lexer.position)
   | Some c ->
