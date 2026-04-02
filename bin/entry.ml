@@ -60,6 +60,7 @@ type field = key * Value.t [@@deriving show]
 
 type raw_entry =
   { etype : etype
+  ; tag : string
   ; fields : field list
   }
 [@@deriving show]
