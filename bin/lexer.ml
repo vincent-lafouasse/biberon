@@ -142,7 +142,7 @@ let tokenize input =
     let lexer, res = next_token lexer in
     match res with
     | Error e -> Error e
-    | Ok (Token.Eof, _) -> Ok (Array.of_list (List.rev acc))
+    | Ok (Token.Eof, pos) -> Ok (Array.of_list (List.rev ((Token.Eof, pos) :: acc)))
     | Ok tok -> loop lexer (tok :: acc)
   in
   loop (init input) []
