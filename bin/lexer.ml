@@ -72,7 +72,11 @@ let skip_whitespace = advance_while Char.Ascii.is_white
 let fn_not f x = not (f x)
 
 (* main export: *)
-let next_token (_lexer : t) : t * (Token.t, error) result = failwith "todo"
+let next_token (_lexer : t)
+  : t * (Token.t Position.located, error Position.located) result
+  =
+  failwith "todo"
+;;
 
 let log (lexer : t) : unit = print_endline (show lexer)
 
