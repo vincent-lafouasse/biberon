@@ -3,6 +3,7 @@ module Value = struct
     | Boolean of bool
     | Integer of int
     | String of string
+  [@@deriving show]
 end
 
 type t =
@@ -13,3 +14,4 @@ type t =
   | Rbrace
   | AtSign
   | Eof
+[@@deriving show]
