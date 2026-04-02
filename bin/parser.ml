@@ -12,9 +12,3 @@ let init input : t =
   { lexer }
 ;;
 
-let next_token parser = Lexer.next_token parser.lexer
-
-let next_raw_entry parser : t * (Entry.raw_entry, error Position.located) result =
-  let _ = parser in
-  failwith "unimplemented"
-;;
