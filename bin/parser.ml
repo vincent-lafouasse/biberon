@@ -149,6 +149,7 @@ let next_raw_entry_inner (parser : t) : t * Entry.raw_entry =
     match etype_res with
     | Ok ident -> past_ident_parser, ident
     | Error _err -> raise (ExpectedToken Etype)
+    (* TODO: more granularity by using the err *)
   in
   failwith "todo"
 ;;
