@@ -13,6 +13,7 @@ type actual_token = Actual of Token.t [@@deriving show]
 
 type error =
   | ExpectedToken of expected_token * actual_token
+  | ExpectedEntry of actual_token
   | ExpectedTag of actual_token
   | ExpectedEtype of actual_token
   | ExpectedKey of actual_token
@@ -180,11 +181,30 @@ let expect_entry parser : t * (Entry.raw_entry, error Position.located) result =
     past_rbrace_parser, Ok { etype; tag; fields }
 ;;
 
+let gather_all_entries (parser : t)
+  : (Entry.raw_entry Array.t, error Position.located) result
+  =
+  let rec fold_entries parser entry_list
+    : (Entry.raw_entry list, error Position.located) result
+    =
+    match get parser with
+    | Token.Eof, _loc -> Ok (List.rev entry_list)
+    | Token.AtSign, _loc ->
+      let past_entry_parser, entry_res = expect_entry parser in
+      (match entry_res with
+       | Error (err, loc) -> Error (err, loc)
+       | Ok entry -> fold_entries past_entry_parser (entry :: entry_list))
+    | tok, loc -> Error (ExpectedEntry (Actual tok), loc)
+  in
+  Result.map Array.of_list (fold_entries parser [])
+;;
+
 (* main export probably *)
 let parse (input : string) : (Entry.raw_entry Array.t, error Position.located) result =
-  let _parser_res = init input in
-  (* gather entries while parser_res is ok *)
-  failwith "unimplemented"
+  let input_res = Result.ok input in
+  (* Enter The Monad *)
+  let parser_res = Result.bind input_res init in
+  Result.bind parser_res gather_all_entries
 ;;
 
 (* ----------tests---------- *)
