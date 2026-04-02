@@ -73,20 +73,26 @@ let substring lexer (start_pos : Position.t) (end_pos : Position.t) =
   String.sub lexer.input start_pos.absolute (Position.distance start_pos end_pos)
 ;;
 
+let scan_while (lexer : t) (pred : char -> bool) : t * string =
+  let start_pos = lexer.position in
+  let past_end_lexer = advance_while pred lexer in
+  let end_pos = past_end_lexer.position in
+  past_end_lexer, substring lexer start_pos end_pos
+;;
+
 let scan_identifier_or_bool (lexer : t)
   : t * (Token.t Position.located, error Position.located) result
   =
-  let start_pos = lexer.position in
-  let past_end_lexer = find_word_end lexer in
-  let end_pos = past_end_lexer.position in
-  let str = substring lexer start_pos end_pos in
+  let past_end_lexer, str =
+    scan_while lexer (either Char.Ascii.is_alphanum (Char.equal '_'))
+  in
   let token =
     match str with
     | "true" -> Token.Value (Token.Value.Boolean true)
     | "false" -> Token.Value (Token.Value.Boolean false)
     | s -> Token.Identifier s
   in
-  past_end_lexer, Ok (token, start_pos)
+  past_end_lexer, Ok (token, lexer.position)
 ;;
 
 (* main export: *)
