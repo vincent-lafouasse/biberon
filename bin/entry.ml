@@ -58,7 +58,7 @@ type bib_entry =
 
 type raw_entry =
   { etype : etype
-  ; tag : string
+  ; tag : tag
   ; fields : field array
   }
 [@@deriving show]
