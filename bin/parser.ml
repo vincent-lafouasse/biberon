@@ -19,7 +19,7 @@ type error =
   | LexerError of Lexer.error
 [@@deriving show]
 
-let token_mismatch expected actual = ExpectedToken (Expected expected, Actual actual)
+let token_mismatch ~expected ~actual = ExpectedToken (Expected expected, Actual actual)
 
 let init (input : string) : (t, error Position.located) result =
   match Lexer.tokenize input with
@@ -38,7 +38,7 @@ let expect_token parser expected : t * (unit, error Position.located) result =
   let actual, location = get parser in
   match actual with
   | tok when tok = expected -> advance parser, Ok ()
-  | _ -> parser, Error (token_mismatch expected actual, location)
+  | _ -> parser, Error (token_mismatch ~expected ~actual, location)
 ;;
 
 (* main export probably *)
@@ -89,14 +89,15 @@ let test_expect_token_mismatch () =
   let p = make_parser "{" in
   let _p, res = expect_token p Token.AtSign in
   expect_eq
-    (Error (token_mismatch Token.AtSign Token.Lbrace, pos 0 1 0))
+    (Error (token_mismatch ~expected:Token.AtSign ~actual:Token.Lbrace, pos 0 1 0))
     res
     "lbrace does not match atsign"
     show_unit_result;
   let p = make_parser "foo" in
   let _p, res = expect_token p Token.Lbrace in
   expect_eq
-    (Error (token_mismatch Token.Lbrace (Token.Identifier "foo"), pos 0 1 0))
+    (Error
+       (token_mismatch ~expected:Token.Lbrace ~actual:(Token.Identifier "foo"), pos 0 1 0))
     res
     "ident does not match lbrace"
     show_unit_result
@@ -114,7 +115,7 @@ let test_expect_token_eof () =
   let p = make_parser "" in
   let _p, res = expect_token p Token.AtSign in
   expect_eq
-    (Error (token_mismatch Token.AtSign Token.Eof, pos 0 1 0))
+    (Error (token_mismatch ~expected:Token.AtSign ~actual:Token.Eof, pos 0 1 0))
     res
     "eof does not match atsign"
     show_unit_result
