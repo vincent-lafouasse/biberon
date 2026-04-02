@@ -48,6 +48,12 @@ let expect_etype parser : t * (Entry.etype, error Position.located) result =
   | _ -> parser, Error (ExpectedEtype (Actual actual), location)
 ;;
 
+let expect_key _parser : t * (Entry.key, error Position.located) result = failwith "todo"
+
+let expect_value _parser : t * (Entry.Value.t, error Position.located) result =
+  failwith "todo"
+;;
+
 (* main export probably *)
 let parse (input : string) : (Entry.raw_entry Array.t, error Position.located) result =
   let _parser_res = init input in
@@ -128,6 +134,85 @@ let test_expect_token_eof () =
     show_unit_result
 ;;
 
+let show_etype_result r = [%show: (Entry.etype, error Position.located) result] r
+let show_key_result r = [%show: (Entry.key, error Position.located) result] r
+let show_value_result r = [%show: (Entry.Value.t, error Position.located) result] r
+
+let test_expect_etype () =
+  let p = make_parser "article" in
+  let _p, res = expect_etype p in
+  expect_eq (Ok (Entry.Etype "article")) res "identifier becomes etype" show_etype_result;
+  let p = make_parser "inproceedings" in
+  let _p, res = expect_etype p in
+  expect_eq (Ok (Entry.Etype "inproceedings")) res "inproceedings etype" show_etype_result;
+  let p = make_parser "{" in
+  let _p, res = expect_etype p in
+  expect_eq
+    (Error (ExpectedEtype (Actual Token.Lbrace), pos 0 1 0))
+    res
+    "lbrace is not an etype"
+    show_etype_result;
+  let p = make_parser "" in
+  let _p, res = expect_etype p in
+  expect_eq
+    (Error (ExpectedEtype (Actual Token.Eof), pos 0 1 0))
+    res
+    "eof is not an etype"
+    show_etype_result
+;;
+
+let test_expect_key () =
+  let p = make_parser "doe2024" in
+  let _p, res = expect_key p in
+  expect_eq (Ok (Entry.Key "doe2024")) res "identifier becomes key" show_key_result;
+  let p = make_parser "smith_2023" in
+  let _p, res = expect_key p in
+  expect_eq (Ok (Entry.Key "smith_2023")) res "key with underscore" show_key_result;
+  let p = make_parser "{" in
+  let _p, res = expect_key p in
+  expect_eq
+    (Error (ExpectedKey (Actual Token.Lbrace), pos 0 1 0))
+    res
+    "lbrace is not a key"
+    show_key_result;
+  let p = make_parser "" in
+  let _p, res = expect_key p in
+  expect_eq
+    (Error (ExpectedKey (Actual Token.Eof), pos 0 1 0))
+    res
+    "eof is not a key"
+    show_key_result
+;;
+
+let test_expect_value () =
+  let p = make_parser {|"hello"|} in
+  let _p, res = expect_value p in
+  expect_eq (Ok (Entry.Value.String "hello")) res "string value" show_value_result;
+  let p = make_parser "2024" in
+  let _p, res = expect_value p in
+  expect_eq (Ok (Entry.Value.Integer 2024)) res "integer value" show_value_result;
+  let p = make_parser "true" in
+  let _p, res = expect_value p in
+  expect_eq (Ok (Entry.Value.Boolean true)) res "boolean true" show_value_result;
+  let p = make_parser "false" in
+  let _p, res = expect_value p in
+  expect_eq (Ok (Entry.Value.Boolean false)) res "boolean false" show_value_result;
+  let p = make_parser "{" in
+  let _p, res = expect_value p in
+  expect_eq
+    (Error (ExpectedValue (Actual Token.Lbrace), pos 0 1 0))
+    res
+    "lbrace is not a value"
+    show_value_result;
+  let p = make_parser "" in
+  let _p, res = expect_value p in
+  expect_eq
+    (Error (ExpectedValue (Actual Token.Eof), pos 0 1 0))
+    res
+    "eof is not a value"
+    show_value_result
+;;
+
 let run_test name f =
   f ();
   print_endline (name ^ " ok")
@@ -137,5 +222,8 @@ let __test () =
   run_test "expect_token: match" test_expect_token_match;
   run_test "expect_token: mismatch" test_expect_token_mismatch;
   run_test "expect_token: advances" test_expect_token_advances;
-  run_test "expect_token: eof" test_expect_token_eof
+  run_test "expect_token: eof" test_expect_token_eof;
+  run_test "expect_etype" test_expect_etype;
+  run_test "expect_key" test_expect_key;
+  run_test "expect_value" test_expect_value
 ;;
