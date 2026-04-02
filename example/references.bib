@@ -1,0 +1,132 @@
+@misc{Swartz2008,
+	author  = {Swartz, Aaron},
+	title   = {Guerilla Open Access Manifesto},
+	year    = {2008},
+
+	archive = {https://archive.org/details/GuerillaOpenAccessManifesto},
+	note    = {why i'm doing this}
+}
+
+@article{Lamport1983,
+	author     = {Lamport, Leslie},
+	title      = {Specifying Concurrent Program Modules},
+	year       = {1983},
+
+	journal    = {ACM Trans. Program. Lang. Syst.},
+	volume     = {5},
+	number     = {2},
+	pages      = {190--222},
+	month      = {apr},
+
+	issue_date = {April 1983},
+	publisher  = {Association for Computing Machinery},
+	address    = {New York, NY, USA},
+	issn       = {0164-0925},
+	numpages   = {33},
+
+	doi        = {10.1145/69624.357207},
+	archive    = {https://lamport.azurewebsites.net/pubs/spec.pdf},
+	note       = {foundational proof of correctness of SPSC queues},
+}
+
+@inproceedings{MichaelScott1996,
+	author    = {Michael, Maged M. and Scott, Michael L.},
+	title     = {Simple, fast, and practical non-blocking and blocking concurrent queue algorithms},
+	year      = {1996},
+
+	booktitle = {15th Annu. ACM Symp. Princ. Distrib. Comput.},
+	series    = {PODC '96},
+	pages     = {267--275},
+
+	isbn      = {0897918002},
+	publisher = {Association for Computing Machinery},
+	address   = {New York, NY, USA},
+	numpages  = {9},
+	keywords  = {compare_and_swap, concurrent queue, lock-free, multiprogramming, non-blocking},
+	location  = {Philadelphia, Pennsylvania, USA},
+
+	doi       = {10.1145/248052.248106},
+	archive   = {https://www.cs.rochester.edu/u/scott/papers/1996_PODC_queues.pdf},
+	note      = {the canonical Michael-Scott queue. lock-free but not wait-free}
+}
+
+@InProceedings{LadanMozes2004,
+	author    = "Ladan-Mozes, Edya and Shavit, Nir",
+	title     = "An Optimistic Approach to Lock-Free FIFO Queues",
+	year      = "2004",
+
+	booktitle = "18th Int. Symp. Distrib. Comput.",
+	series    = "DISC '04",
+	pages     = "117--131",
+
+	editor    = "Guerraoui, Rachid",
+	publisher = "Springer Berlin Heidelberg",
+	address   = "Berlin, Heidelberg",
+	abstract  = "First-in-first-out (FIFO) queues are among the most fundamental and highly studied concurrent data structures. The most effective and practical dynamic-memory concurrent queue implementation in the literature is the lock-free FIFO queue algorithm of Michael and Scott, included in the standard JavaTMConcurrency Package.",
+	isbn      = "978-3-540-30186-8",
+
+	doi       = {10.1007/978-3-540-30186-8_9},
+	archive   = {https://people.csail.mit.edu/shanir/publications/FIFO_Queues.pdf},
+}
+
+
+@inproceedings{Giacomoni2008,
+	author    = {Giacomoni, John and Moseley, Tipp and Vachharajani, Manish},
+	title     = {FastForward for efficient pipeline parallelism: a cache-optimized concurrent lock-free queue},
+	year      = {2008},
+
+	booktitle = {13th ACM SIGPLAN Symp. Princ. Pract. Parallel Program.},
+	series    = {PPoPP '08},
+	pages     = {43-–52},
+
+	isbn      = {9781595937957},
+	publisher = {Association for Computing Machinery},
+	address   = {New York, NY, USA},
+	url       = {https://doi.org/10.1145/1345206.1345215},
+	abstract  = {Low overhead core-to-core communication is critical for efficient pipeline-parallel software applications. This paper presents FastForward, a cache-optimized single-producer/single-consumer concurrent lock-free queue for pipeline parallelism on multicore architectures, with weak to strongly ordered consistency models. Enqueue and dequeue times on a 2.66 GHz Opteron 2218 based system are as low as 28.5 ns, up to 5x faster than the next best solution. FastForward's effectiveness is demonstrated for real applications by applying it to line-rate soft network processing on Gigabit Ethernet with general purpose commodity hardware.},
+	numpages  = {10},
+	keywords  = {fastforward, linearizability, lock-free, multicore, multiprocessors, nonblocking synchronization, pipeline parallel, queue},
+	location  = {Salt Lake City, UT, USA},
+
+	doi       = {10.1145/1345206.1345215},
+	archive   = {https://dl.acm.org/doi/epdf/10.1145/1345206.1345215},
+	note      = {an actual machine aware, CLF queue instead of the weird MS queue},
+}
+
+@InProceedings{Aldinucci2012,
+	author    = "Aldinucci, Marco and Danelutto, Marco and Kilpatrick, Peter and Meneghin, Massimiliano and Torquati, Massimo",
+	title     = "An Efficient Unbounded Lock-Free Queue for Multi-core Systems",
+	year      = "2012",
+
+	booktitle = "18th Int. Conf. Parallel Process.",
+	series    = "Euro-Par '12",
+	pages     = "662--673",
+
+	editor    = "Kaklamanis, Christos and Papatheodorou, Theodore and Spirakis, Paul G.",
+	publisher = "Springer Berlin Heidelberg",
+	address   = "Berlin, Heidelberg",
+	abstract  = "The use of efficient synchronization mechanisms is crucial for implementing fine grained parallel programs on modern shared cache multi-core architectures. In this paper we study this problem by considering Single-Producer/Single-Consumer (SPSC) coordination using unbounded queues. A novel unbounded SPSC algorithm capable of reducing the row synchronization latency and speeding up Producer-Consumer coordination is presented. The algorithm has been extensively tested on a shared-cache multi-core platform and a sketch proof of correctness is presented. The queues proposed have been used as basic building blocks to implement the FastFlow parallel framework, which has been demonstrated to offer very good performance for fine-grain parallel applications.",
+	isbn      = "978-3-642-32820-6",
+
+	doi       = {10.1007/978-3-642-32820-6_65},
+	archive   = {https://link.springer.com/content/pdf/10.1007/978-3-642-32820-6_65.pdf},
+	note      = {on unbounded queues},
+}
+
+@INPROCEEDINGS{Le2013,
+	author    = {Lê, Nhat Minh and Guatto, Adrien and Cohen, Albert and Pop, Antoniu},
+	title     = {Correct and Efficient Bounded FIFO Queues}, 
+	year      = {2013},
+
+	booktitle = {25th Int. Symp. Comp. Archit. High Perform. Comput.}, 
+	series    = {SBAC-PAD '13},
+	pages     = {144--151},
+
+	volume    = {},
+	number    = {},
+	keywords  = {Indexes;Instruction sets;Arrays;Radio frequency;Load modeling;Memory management;FIFO queue;lock-free algorithm;weak memory model;% data-flow programming;Kahn process network},
+
+	doi       = {10.1109/SBAC-PAD.2013.8},
+	archive   = {https://www.irif.fr/~guatto/publications/sbac13.pdf},
+	note      = {working with weak memory consistency. in C11},
+}
