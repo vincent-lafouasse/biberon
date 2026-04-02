@@ -117,6 +117,15 @@ let expect_field_trailing_comma parser : t * (Entry.field, error Position.locate
     parser, Ok field
 ;;
 
+let expect_field_list parser : t * (Entry.field list, error Position.located) result =
+  let (*rec*) _fold_field_list parser acc =
+    let _ = parser, acc in
+    failwith "todo"
+  in
+  let _ = parser in
+  failwith "todo"
+;;
+
 let expect_entry parser : t * (Entry.raw_entry, error Position.located) result =
   let past_atsign_parser, atsign_res = expect_token parser Token.AtSign in
   let parser = if Result.is_ok atsign_res then past_atsign_parser else parser in
