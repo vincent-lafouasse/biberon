@@ -41,6 +41,13 @@ let expect_token parser expected : t * (unit, error Position.located) result =
   | _ -> parser, Error (token_mismatch ~expected ~actual, location)
 ;;
 
+let expect_etype parser : t * (Entry.etype, error Position.located) result =
+  let actual, location = get parser in
+  match actual with
+  | Token.Identifier etype -> advance parser, Ok (Entry.Etype etype)
+  | _ -> parser, Error (ExpectedEtype (Actual actual), location)
+;;
+
 (* main export probably *)
 let parse (input : string) : (Entry.raw_entry Array.t, error Position.located) result =
   let _parser_res = init input in
