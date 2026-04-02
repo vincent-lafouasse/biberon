@@ -135,20 +135,43 @@ let expect_field_list parser : t * (Entry.field list, error Position.located) re
 let expect_entry parser : t * (Entry.raw_entry, error Position.located) result =
   let past_atsign_parser, atsign_res = expect_token parser Token.AtSign in
   let parser = if Result.is_ok atsign_res then past_atsign_parser else parser in
-  let past_lbrace_parser, lbrace_res = expect_token parser Token.Lbrace in
+  let past_etype_parser, etype_res =
+    match atsign_res with
+    | Error (err, loc) -> parser, Error (err, loc)
+    | Ok () -> expect_etype parser
+  in
+  let parser = if Result.is_ok etype_res then past_etype_parser else parser in
+  let past_lbrace_parser, lbrace_res =
+    match etype_res with
+    | Error (err, loc) -> parser, Error (err, loc)
+    | Ok _etype -> expect_token parser Token.Lbrace
+  in
   let parser = if Result.is_ok lbrace_res then past_lbrace_parser else parser in
-  let past_tag_parser, tag_res = expect_tag parser in
+  let past_tag_parser, tag_res =
+    match lbrace_res with
+    | Error (err, loc) -> parser, Error (err, loc)
+    | Ok () -> expect_tag parser
+  in
   let parser = if Result.is_ok tag_res then past_tag_parser else parser in
-  (* parse the fields here *)
-  let past_rbrace_parser, rbrace_res = expect_token parser Token.Rbrace in
-  let parser = if Result.is_ok tag_res then past_rbrace_parser else parser in
+  let past_fields_parser, fields_res =
+    match tag_res with
+    | Error (err, loc) -> parser, Error (err, loc)
+    | Ok _tag -> expect_field_list parser
+  in
+  let parser = if Result.is_ok fields_res then past_fields_parser else parser in
+  let past_rbrace_parser, rbrace_res =
+    match fields_res with
+    | Error (err, loc) -> parser, Error (err, loc)
+    | Ok _fields -> expect_token parser Token.Rbrace
+  in
   match rbrace_res with
   | Error (err, loc) -> parser, Error (err, loc)
   | Ok () ->
-    let _tag = Result.get_ok tag_res in
-    let _fields : Entry.field list = [] in
-    (* TODO: actually parse the fields *)
-    failwith "unimplemented"
+    let etype = Result.get_ok etype_res in
+    let tag = Result.get_ok tag_res in
+    let field_list = Result.get_ok fields_res in
+    let fields = Array.of_list field_list in
+    past_rbrace_parser, Ok { etype; tag; fields }
 ;;
 
 (* main export probably *)
