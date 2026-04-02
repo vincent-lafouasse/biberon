@@ -1,5 +1,3 @@
-[@@@warning "-69-34-37-32"]
-
 type t =
   { input : string
   ; position : Position.t
@@ -64,13 +62,9 @@ let rec advance_while pred lexer =
   if continue then advance_while pred (advance lexer) else lexer
 ;;
 
-let find_word_end = advance_while (either Char.Ascii.is_alphanum (Char.equal '_'))
-
 let skip_whitespace = advance_while Char.Ascii.is_white
 
 let fn_not f x = not (f x)
-
-let find_string_end = advance_while (fn_not (Char.equal '"'))
 
 let substring lexer (start_pos : Position.t) (end_pos : Position.t) =
   String.sub lexer.input start_pos.absolute (Position.distance start_pos end_pos)
@@ -143,8 +137,6 @@ let next_token (lexer : t) : t * (Token.t Position.located, error Position.locat
      | c -> lexer, Error (UnrecognizedCharacter c, lexer.position))
 ;;
 
-let log (lexer : t) : unit = print_endline (show lexer)
-
 (* ----------tests---------- *)
 
 let expect cond msg = if not cond then failwith ("FAIL: " ^ msg)
@@ -164,8 +156,6 @@ let expect_eq expected actual msg show =
 ;;
 
 let show_char_opt c = [%show: char option] c
-let show_error_opt e = [%show: error option] e
-let show_result r = [%show: (string, error) result] r
 
 let test_init () =
   let empty = init "" in
@@ -327,10 +317,6 @@ let tokenize input =
     | Ok tok -> loop lexer (tok :: acc)
   in
   loop (init input) []
-;;
-
-let show_token_list r =
-  [%show: (Token.t Position.located list, error Position.located) result] r
 ;;
 
 let test_bib_realistic () =
