@@ -109,6 +109,7 @@ let expect_field_trailing_comma parser : t * (Entry.field, error Position.locate
     | Error (err, loc) -> parser, Error (err, loc)
     | Ok _ -> expect_token parser Token.Comma
   in
+  let parser = if Result.is_ok comma_res then past_comma_parser else parser in
   match comma_res with
   | Error (err, loc) -> parser, Error (err, loc)
   | Ok () ->
