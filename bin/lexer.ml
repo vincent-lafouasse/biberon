@@ -71,6 +71,8 @@ let skip_whitespace = advance_while Char.Ascii.is_white
 
 let fn_not f x = not (f x)
 
+let find_string_end = advance_while (fn_not (Char.equal '"'))
+
 (* main export: *)
 let next_token (lexer : t) : t * (Token.t Position.located, error Position.located) result
   =
