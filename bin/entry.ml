@@ -41,8 +41,17 @@ type bib_entry =
   | Inproceedings of common_fields * inproceedings_fields
   | Other of etype * common_fields
 
-(* intermediate type used by the parser before typed conversion *)
+type key = Key of string
+
+module Value = struct
+  type t =
+    | Boolean of bool
+    | Integer of int
+    | String of string
+  [@@deriving show]
+end
+
 type raw_entry =
-  { etype : string
-  ; fields : (string * string) list
+  { etype : etype
+  ; fields : (key * Value.t) list
   }
