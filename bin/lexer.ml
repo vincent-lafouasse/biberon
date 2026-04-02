@@ -78,6 +78,13 @@ let next_token (lexer : t) : t * (Token.t Position.located, error Position.locat
   | None -> lexer, Ok (Token.Eof, lexer.position)
   | Some c ->
     (match c with
+     | '@' -> advance lexer, Ok (Token.Atsign, lexer.position)
+     | '{' -> advance lexer, Ok (Token.Lbrace, lexer.position)
+     | '}' -> advance lexer, Ok (Token.Rbrace, lexer.position)
+     | '=' -> advance lexer, Ok (Token.EqualSign, lexer.position)
+     | '"' -> failwith "tokenize string"
+     | c when Char.Ascii.is_digit c -> failwith "tokenize number"
+     | c when char_is_ident_start c -> failwith "tokenize identifier (or true/false)"
      | _ -> failwith "todo")
 ;;
 
