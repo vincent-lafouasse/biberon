@@ -4,6 +4,7 @@ type common_fields =
   ; year : int
   ; archive : string
   }
+[@@deriving show]
 
 type month =
   | Jan
@@ -18,6 +19,7 @@ type month =
   | Oct
   | Nov
   | Dec
+[@@deriving show]
 
 type article_fields =
   { journal : string
@@ -27,21 +29,24 @@ type article_fields =
   ; month : month
   ; doi : string
   }
+[@@deriving show]
 
 type inproceedings_fields =
   { booktitle : string
   ; pages : int * int
   ; doi : string
   }
+[@@deriving show]
 
-type etype = Etype of string
+type etype = Etype of string [@@deriving show]
 
 type bib_entry =
   | Article of common_fields * article_fields
   | Inproceedings of common_fields * inproceedings_fields
   | Other of etype * common_fields
+[@@deriving show]
 
-type key = Key of string
+type key = Key of string [@@deriving show]
 
 module Value = struct
   type t =
@@ -55,3 +60,4 @@ type raw_entry =
   { etype : etype
   ; fields : (key * Value.t) list
   }
+[@@deriving show]
