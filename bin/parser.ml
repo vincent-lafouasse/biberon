@@ -16,4 +16,8 @@ let init input : t =
   { lexer }
 ;;
 
-let init (input : string) : (t, Lexer.error Position.located) result = failwith "todo"
+let init (input : string) : (t, Lexer.error Position.located) result =
+  match Lexer.tokenie input with
+  | Ok tokens -> { tokens }
+  | Error err -> Error err
+;;
