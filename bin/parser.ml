@@ -142,11 +142,18 @@ let next_raw_entry_inner (parser : t) : t * Entry.raw_entry =
   (* parser is now either i) on '@' or ii) EOF *)
   let parser = if not (eof parser) then advance parser else raise NoEntryLeft in
   let past_ident_parser, etype_res = expect_identifier parser in
-  let _parser, _etype =
+  let parser, _etype =
     match etype_res with
     | Ok ident -> past_ident_parser, ident
     | Error _err -> raise (ExpectedToken Etype)
     (* TODO: more granularity by using the err *)
+  in
+  let parser = skip_whitespace parser in
+  let past_lbrace_parser, maybe_err = expect_char_eq parser '{' in
+  let _parser =
+    match maybe_err with
+    | None -> past_lbrace_parser
+    | Some _err -> raise (ExpectedToken Lbrace)
   in
   failwith "todo"
 ;;
