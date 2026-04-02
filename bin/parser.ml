@@ -130,8 +130,8 @@ let expect_entry parser : t * (Entry.raw_entry, error Position.located) result =
   match rbrace_res with
   | Error (err, loc) -> parser, Error (err, loc)
   | Ok () ->
-    let tag = Result.get_ok tag_res in
-    let fields : Entry.field list = [] in
+    let _tag = Result.get_ok tag_res in
+    let _fields : Entry.field list = [] in
     (* TODO: actually parse the fields *)
     failwith "unimplemented"
 ;;
