@@ -162,9 +162,114 @@ let run_test name f =
   print_endline (name ^ " ok")
 ;;
 
+let show_token_result r =
+  [%show: (Token.t Position.located, error Position.located) result] r
+;;
+
+let tok input = snd (next_token (init input))
+
+let pos absolute line column : Position.t = { absolute; line; column }
+
+let test_next_token_structural () =
+  expect_eq (Ok (Token.AtSign, pos 0 1 0)) (tok "@") "atsign" show_token_result;
+  expect_eq (Ok (Token.Lbrace, pos 0 1 0)) (tok "{") "lbrace" show_token_result;
+  expect_eq (Ok (Token.Rbrace, pos 0 1 0)) (tok "}") "rbrace" show_token_result;
+  expect_eq (Ok (Token.EqualSign, pos 0 1 0)) (tok "=") "equalsign" show_token_result;
+  expect_eq (Ok (Token.Eof, pos 0 1 0)) (tok "") "eof on empty" show_token_result
+;;
+
+let test_next_token_whitespace () =
+  expect_eq (Ok (Token.AtSign, pos 3 1 3)) (tok "   @") "skips spaces" show_token_result;
+  expect_eq
+    (Ok (Token.Lbrace, pos 1 2 0))
+    (tok "\n{")
+    "skips newline, tracks line"
+    show_token_result
+;;
+
+let test_next_token_identifier () =
+  expect_eq
+    (Ok (Token.Identifier "article", pos 0 1 0))
+    (tok "article")
+    "simple ident"
+    show_token_result;
+  expect_eq
+    (Ok (Token.Identifier "foo_bar", pos 0 1 0))
+    (tok "foo_bar")
+    "ident with underscore"
+    show_token_result;
+  expect_eq
+    (Ok (Token.Identifier "a123", pos 0 1 0))
+    (tok "a123")
+    "ident with digits"
+    show_token_result
+;;
+
+let test_next_token_string () =
+  expect_eq
+    (Ok (Token.Value (Token.Value.String "hello"), pos 0 1 0))
+    (tok {|"hello"|})
+    "string"
+    show_token_result;
+  expect_eq
+    (Ok (Token.Value (Token.Value.String ""), pos 0 1 0))
+    (tok {|""|})
+    "empty string"
+    show_token_result;
+  expect_eq
+    (Ok (Token.Value (Token.Value.String "hello world"), pos 0 1 0))
+    (tok {|"hello world"|})
+    "string with space"
+    show_token_result
+;;
+
+let test_next_token_integer () =
+  expect_eq
+    (Ok (Token.Value (Token.Value.Integer 42), pos 0 1 0))
+    (tok "42")
+    "integer"
+    show_token_result;
+  expect_eq
+    (Ok (Token.Value (Token.Value.Integer 0), pos 0 1 0))
+    (tok "0")
+    "zero"
+    show_token_result;
+  expect_eq
+    (Ok (Token.Value (Token.Value.Integer 2024), pos 0 1 0))
+    (tok "2024")
+    "year"
+    show_token_result
+;;
+
+let test_next_token_sequence () =
+  (* tokenize "@article" as two tokens *)
+  let l = init "@article" in
+  let l, t1 = next_token l in
+  let _l, t2 = next_token l in
+  expect_eq (Ok (Token.AtSign, pos 0 1 0)) t1 "seq: first token" show_token_result;
+  expect_eq
+    (Ok (Token.Identifier "article", pos 1 1 1))
+    t2
+    "seq: second token"
+    show_token_result
+;;
+
+let test_next_token_error () =
+  (* unterminated string *)
+  let _, res = next_token (init {|"unterminated|}) in
+  expect (Result.is_error res) "unterminated string is error"
+;;
+
 let __test () =
   run_test "init" test_init;
   run_test "peek" test_peek;
   run_test "advance" test_advance;
-  run_test "advance_by" test_advance_by
+  run_test "advance_by" test_advance_by;
+  run_test "next_token: structural" test_next_token_structural;
+  run_test "next_token: whitespace" test_next_token_whitespace;
+  run_test "next_token: identifier" test_next_token_identifier;
+  run_test "next_token: string" test_next_token_string;
+  run_test "next_token: integer" test_next_token_integer;
+  run_test "next_token: sequence" test_next_token_sequence;
+  run_test "next_token: error" test_next_token_error
 ;;
