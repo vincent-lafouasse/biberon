@@ -68,6 +68,11 @@ let expect_value parser : t * (Entry.Value.t, error Position.located) result =
   | _ -> parser, Error (ExpectedValue (Actual actual), location)
 ;;
 
+let expect_field parser : t * (Entry.field, error Position.located) result =
+  let _ = parser in
+  failwith "unimplemented"
+;;
+
 (* main export probably *)
 let parse (input : string) : (Entry.raw_entry Array.t, error Position.located) result =
   let _parser_res = init input in
