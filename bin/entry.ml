@@ -50,7 +50,7 @@ type inproceedings_fields =
   }
 [@@deriving show]
 
-type bib_entry =
+type t =
   | Article of common_fields * article_fields
   | Inproceedings of common_fields * inproceedings_fields
   | Other of etype * common_fields
