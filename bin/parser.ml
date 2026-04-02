@@ -24,7 +24,7 @@ let token_mismatch expected actual = ExpectedToken (Expected expected, Actual ac
 let init (input : string) : (t, error Position.located) result =
   match Lexer.tokenize input with
   | Ok tokens -> Ok { tokens; index = 0 }
-  | Error err -> Error (LexerError err)
+  | Error (err, location) -> Error (LexerError err, location)
 ;;
 
 let get parser = Array.get parser.tokens parser.index
