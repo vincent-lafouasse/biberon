@@ -52,7 +52,7 @@ let expect_key parser : t * (Entry.key, error Position.located) result =
   let actual, location = get parser in
   match actual with
   | Token.Identifier key -> advance parser, Ok (Entry.Key key)
-  | _ -> parser, Error (ExpectedEtype (Actual actual), location)
+  | _ -> parser, Error (ExpectedKey (Actual actual), location)
 ;;
 
 let expect_value _parser : t * (Entry.Value.t, error Position.located) result =
