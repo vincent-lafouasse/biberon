@@ -11,3 +11,4 @@ type t =
   | Lbrace
   | Rbrace
   | Atsign
+  | Eof
