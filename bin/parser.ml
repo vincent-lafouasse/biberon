@@ -1,17 +1,8 @@
 [@@@warning "-69-34-37-32"]
 
-type position =
-  { absolute : int
-  ; line : int
-  ; column : int
-  }
-[@@deriving show]
-
-let distance pos_from pos_to = pos_to.absolute - pos_from.absolute
-
 type t =
   { input : string
-  ; position : position
+  ; position : Position.t
   }
 [@@deriving show]
 
@@ -23,13 +14,13 @@ type error =
 [@@deriving show]
 
 let init (input : string) : t =
-  let position = { absolute = 0; line = 1; column = 0 } in
+  let position : Position.t = { absolute = 0; line = 1; column = 0 } in
   { input; position }
 ;;
 
 let len parser = String.length parser.input
 
-let at parser position = String.get parser.input position.absolute
+let at parser (position : Position.t) = String.get parser.input position.absolute
 
 let eof parser = parser.position.absolute >= len parser
 
@@ -39,11 +30,11 @@ let get (parser : t) : char option =
 
 let get_unsafe parser : char = Option.get (get parser)
 
-let substring parser start_pos end_pos =
-  String.sub parser.input start_pos.absolute (distance start_pos end_pos)
+let substring parser (start_pos : Position.t) (end_pos : Position.t) =
+  String.sub parser.input start_pos.absolute (Position.distance start_pos end_pos)
 ;;
 
-let increment_position position break_line =
+let increment_position (position : Position.t) break_line : Position.t =
   let absolute = position.absolute + 1 in
   let line, column =
     if break_line then position.line + 1, 0 else position.line, position.column + 1
@@ -93,7 +84,7 @@ let rec advance_while pred parser =
 let find_word_end = advance_while (either Char.Ascii.is_alphanum (Char.equal '_'))
 
 let expect_identifier (parser : t) : t * (string, error) result =
-  let start : position = parser.position in
+  let start : Position.t = parser.position in
   let parser, first_char_res =
     match get parser with
     | None -> parser, Error UnexpectedEof
