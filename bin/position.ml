@@ -5,4 +5,6 @@ type t =
   }
 [@@deriving show]
 
+type 'a located = 'a * t
+
 let distance pos_from pos_to = pos_to.absolute - pos_from.absolute
