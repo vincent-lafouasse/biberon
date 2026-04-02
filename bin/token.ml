@@ -13,5 +13,6 @@ type t =
   | Lbrace
   | Rbrace
   | AtSign
+  | Comma
   | Eof
 [@@deriving show]
