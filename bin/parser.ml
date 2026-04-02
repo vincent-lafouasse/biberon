@@ -12,4 +12,4 @@ let init input : t =
   { lexer }
 ;;
 
-let next_token = Lexer.next_token
+let next_token parser = Lexer.next_token parser.lexer
