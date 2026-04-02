@@ -5,6 +5,13 @@ type error =
   | MissingCoreField
   | MissingSpecificField
 
+(* responsibilities:
+    - recognize the etype
+    - assert existence and unicity of common and specific fields
+    - assert that those fields are not malformed
+    - package them in a finished entry
+*)
+
 let validate_entry (_raw_entry : Entry.raw_entry) : (Entry.bib_entry, error) result =
   failwith "todo"
 ;;
