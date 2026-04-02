@@ -118,6 +118,12 @@ let scan_string (lexer : t)
   | _ -> failwith "unreachable: scan_while didn't land on a quote or EOF"
 ;;
 
+let scan_int (lexer : t) : t * (Token.t Position.located, error Position.located) result =
+  let start_pos = lexer.position in
+  let past_end_lexer, str = scan_while lexer Char.Ascii.is_digit in
+  past_end_lexer, Ok (Token.Value (Token.Value.Integer (int_of_string str)), start_pos)
+;;
+
 (* main export: *)
 let next_token (lexer : t) : t * (Token.t Position.located, error Position.located) result
   =
@@ -132,7 +138,7 @@ let next_token (lexer : t) : t * (Token.t Position.located, error Position.locat
      | '=' -> advance lexer, Ok (Token.EqualSign, lexer.position)
      | ',' -> advance lexer, Ok (Token.Comma, lexer.position)
      | '"' -> scan_string lexer
-     | c when Char.Ascii.is_digit c -> failwith "tokenize number"
+     | c when Char.Ascii.is_digit c -> scan_int lexer
      | c when char_is_ident_start c -> scan_identifier_or_bool lexer
      | c -> lexer, Error (UnrecognizedCharacter c, lexer.position))
 ;;
