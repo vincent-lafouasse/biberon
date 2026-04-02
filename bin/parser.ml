@@ -11,4 +11,3 @@ let init input : t =
   let lexer = Lexer.init input in
   { lexer }
 ;;
-

@@ -118,7 +118,6 @@ let scan_int (lexer : t) : t * (Token.t Position.located, error Position.located
   past_end_lexer, Ok (Token.Value (Token.Value.Integer (int_of_string str)), start_pos)
 ;;
 
-(* main export: *)
 let next_token (lexer : t) : t * (Token.t Position.located, error Position.located) result
   =
   let lexer = skip_whitespace lexer in
@@ -135,6 +134,18 @@ let next_token (lexer : t) : t * (Token.t Position.located, error Position.locat
      | c when Char.Ascii.is_digit c -> scan_int lexer
      | c when char_is_ident_start c -> scan_identifier_or_bool lexer
      | c -> lexer, Error (UnrecognizedCharacter c, lexer.position))
+;;
+
+(* main export: *)
+let tokenize input =
+  let rec loop lexer acc =
+    let lexer, res = next_token lexer in
+    match res with
+    | Error e -> Error e
+    | Ok (Token.Eof, _) -> Ok (Array.of_list (List.rev acc))
+    | Ok tok -> loop lexer (tok :: acc)
+  in
+  loop (init input) []
 ;;
 
 (* ----------tests---------- *)
@@ -305,18 +316,6 @@ let test_next_token_error () =
   expect (Result.is_error res) "unrecognized: $";
   let _, res = next_token (init "!") in
   expect (Result.is_error res) "unrecognized: !"
-;;
-
-(* drain all tokens from a lexer into an array *)
-let tokenize input =
-  let rec loop lexer acc =
-    let lexer, res = next_token lexer in
-    match res with
-    | Error e -> Error e
-    | Ok (Token.Eof, _) -> Ok (Array.of_list (List.rev acc))
-    | Ok tok -> loop lexer (tok :: acc)
-  in
-  loop (init input) []
 ;;
 
 let test_bib_realistic () =

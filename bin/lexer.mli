@@ -1,7 +1,4 @@
-type t
 type error
 
-val init : string -> t
-val next_token : t -> t * (Token.t Position.located, error Position.located) result
-val show : t -> string
+val tokenize : string -> (Token.t Position.located Array.t, error Position.located) result
 val __test : unit -> unit
