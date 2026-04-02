@@ -12,6 +12,10 @@ type error =
     - package them in a finished entry
 *)
 
+(* before all that, i might check that no two entries have the same tag, this
+   way i can use just the tag to report errors
+*)
+
 let validate_entry (_raw_entry : Entry.raw_entry) : (Entry.bib_entry, error) result =
   failwith "todo"
 ;;
