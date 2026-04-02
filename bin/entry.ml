@@ -1,3 +1,15 @@
+module Value = struct
+  type t =
+    | Boolean of bool
+    | Integer of int
+    | String of string
+  [@@deriving show]
+end
+
+type etype = Etype of string [@@deriving show]
+type tag = Tag of string [@@deriving show]
+type key = Key of string [@@deriving show]
+type field = key * Value.t [@@deriving show]
 type common_fields =
   { author : string
   ; title : string
@@ -38,25 +50,11 @@ type inproceedings_fields =
   }
 [@@deriving show]
 
-type etype = Etype of string [@@deriving show]
-
 type bib_entry =
   | Article of common_fields * article_fields
   | Inproceedings of common_fields * inproceedings_fields
   | Other of etype * common_fields
 [@@deriving show]
-
-type key = Key of string [@@deriving show]
-
-module Value = struct
-  type t =
-    | Boolean of bool
-    | Integer of int
-    | String of string
-  [@@deriving show]
-end
-
-type field = key * Value.t [@@deriving show]
 
 type raw_entry =
   { etype : etype

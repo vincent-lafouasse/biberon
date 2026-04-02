@@ -13,6 +13,7 @@ type actual_token = Actual of Token.t [@@deriving show]
 
 type error =
   | ExpectedToken of expected_token * actual_token
+  | ExpectedTag of actual_token
   | ExpectedEtype of actual_token
   | ExpectedKey of actual_token
   | ExpectedValue of actual_token
@@ -34,6 +35,8 @@ let advance parser =
   { parser with index }
 ;;
 
+(* yeah there's a bunch of duplication, i do not care *)
+
 let expect_token parser expected : t * (unit, error Position.located) result =
   let actual, location = get parser in
   match actual with
@@ -46,6 +49,13 @@ let expect_etype parser : t * (Entry.etype, error Position.located) result =
   match actual with
   | Token.Identifier etype -> advance parser, Ok (Entry.Etype etype)
   | _ -> parser, Error (ExpectedEtype (Actual actual), location)
+;;
+
+let expect_tag parser : t * (Entry.tag, error Position.located) result =
+  let actual, location = get parser in
+  match actual with
+  | Token.Identifier etype -> advance parser, Ok (Entry.Tag etype)
+  | _ -> parser, Error (ExpectedTag (Actual actual), location)
 ;;
 
 let expect_key parser : t * (Entry.key, error Position.located) result =
@@ -296,7 +306,9 @@ let test_expect_field () =
   (* error: missing equals *)
   let _p, res = expect_field (make_parser {|key "value"|}) in
   expect_eq
-    (Some (ExpectedToken (Expected Token.EqualSign, Actual (Token.Value (Token.Value.String "value")))))
+    (Some
+       (ExpectedToken
+          (Expected Token.EqualSign, Actual (Token.Value (Token.Value.String "value")))))
     (err_variant res)
     "missing equals: error variant"
     [%show: error option];
