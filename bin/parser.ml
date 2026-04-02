@@ -23,6 +23,20 @@ let init (input : string) : (t, error Position.located) result =
   | Error err -> Error (LexerError err)
 ;;
 
+let get parser = Array.get parser.tokens parser.index
+
+let advance parser =
+  let index = parser.index + 1 in
+  { parser with index }
+;;
+
+let expect_token parser expected : t * (unit, error Position.located) result =
+  let token, location = get parser in
+  match token with
+  | expected -> advance parser, Ok ()
+  | _ -> parser, Error (ExpectedToken expected, location)
+;;
+
 (* main export probably *)
 let parse (input : string) : (Entry.raw_entry Array.t, error Position.located) result =
   let parser_res = init input in
