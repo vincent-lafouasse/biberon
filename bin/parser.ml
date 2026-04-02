@@ -22,7 +22,7 @@ type error =
 let token_mismatch expected actual = ExpectedToken (Expected expected, Actual actual)
 
 let init (input : string) : (t, error Position.located) result =
-  match Lexer.tokenie input with
+  match Lexer.tokenize input with
   | Ok tokens -> { tokens }
   | Error err -> Error (LexerError err)
 ;;
