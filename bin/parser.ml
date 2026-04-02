@@ -118,12 +118,18 @@ let expect_field_trailing_comma parser : t * (Entry.field, error Position.locate
 ;;
 
 let expect_field_list parser : t * (Entry.field list, error Position.located) result =
-  let (*rec*) _fold_field_list parser acc =
-    let _ = parser, acc in
-    failwith "todo"
+  let rec fold_field_list parser acc
+    : t * (Entry.field list, error Position.located) result
+    =
+    match get parser with
+    | Token.Rbrace, _loc -> parser, Ok (List.rev acc)
+    | _ ->
+      let advanced_parser, field_res = expect_field_trailing_comma parser in
+      (match field_res with
+       | Error (err, loc) -> parser, Error (err, loc)
+       | Ok field -> fold_field_list advanced_parser (field :: acc))
   in
-  let _ = parser in
-  failwith "todo"
+  fold_field_list parser []
 ;;
 
 let expect_entry parser : t * (Entry.raw_entry, error Position.located) result =
