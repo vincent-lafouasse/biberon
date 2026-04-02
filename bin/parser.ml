@@ -23,7 +23,7 @@ let token_mismatch expected actual = ExpectedToken (Expected expected, Actual ac
 
 let init (input : string) : (t, error Position.located) result =
   match Lexer.tokenize input with
-  | Ok tokens -> { tokens }
+  | Ok tokens -> Ok { tokens; index = 0 }
   | Error err -> Error (LexerError err)
 ;;
 
