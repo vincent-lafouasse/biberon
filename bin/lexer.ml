@@ -98,6 +98,16 @@ let scan_identifier_or_bool (lexer : t)
   past_end_lexer, Ok (token, lexer.position)
 ;;
 
+let scan_string (lexer : t)
+  : t * (Token.t Position.located, error Position.located) result
+  =
+  let _ =
+    if eof lexer || not (Char.equal (get_unsafe lexer) '"')
+    then failwith "unreachable: string not starting with quote"
+  in
+  failwith "string scanning todo"
+;;
+
 (* main export: *)
 let next_token (lexer : t) : t * (Token.t Position.located, error Position.located) result
   =
@@ -111,7 +121,7 @@ let next_token (lexer : t) : t * (Token.t Position.located, error Position.locat
      | '}' -> advance lexer, Ok (Token.Rbrace, lexer.position)
      | '=' -> advance lexer, Ok (Token.EqualSign, lexer.position)
      | ',' -> advance lexer, Ok (Token.Comma, lexer.position)
-     | '"' -> failwith "tokenize string"
+     | '"' -> scan_string lexer
      | c when Char.Ascii.is_digit c -> failwith "tokenize number"
      | c when char_is_ident_start c -> scan_identifier_or_bool lexer
      | c -> lexer, Error (UnrecognizedCharacter c, lexer.position))
