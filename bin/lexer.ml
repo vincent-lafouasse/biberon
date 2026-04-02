@@ -6,7 +6,10 @@ type t =
   }
 [@@deriving show]
 
-type error = UnterminatedString [@@deriving show]
+type error =
+  | UnterminatedString
+  | UnrecognizedCharacter of char
+[@@deriving show]
 
 let init (input : string) : t =
   let position : Position.t = { absolute = 0; line = 1; column = 0 } in
@@ -110,7 +113,7 @@ let next_token (lexer : t) : t * (Token.t Position.located, error Position.locat
      | '"' -> failwith "tokenize string"
      | c when Char.Ascii.is_digit c -> failwith "tokenize number"
      | c when char_is_ident_start c -> scan_identifier_or_bool lexer
-     | _ -> failwith "todo")
+     | c -> lexer, Error (UnrecognizedCharacter c, lexer.position))
 ;;
 
 let log (lexer : t) : unit = print_endline (show lexer)
