@@ -25,10 +25,6 @@ let get (lexer : t) : char option =
 
 let get_unsafe lexer : char = Option.get (get lexer)
 
-let substring lexer (start_pos : Position.t) (end_pos : Position.t) =
-  String.sub lexer.input start_pos.absolute (Position.distance start_pos end_pos)
-;;
-
 let increment_position (position : Position.t) break_line : Position.t =
   let absolute = position.absolute + 1 in
   let line, column =
@@ -72,6 +68,26 @@ let skip_whitespace = advance_while Char.Ascii.is_white
 let fn_not f x = not (f x)
 
 let find_string_end = advance_while (fn_not (Char.equal '"'))
+
+let substring lexer (start_pos : Position.t) (end_pos : Position.t) =
+  String.sub lexer.input start_pos.absolute (Position.distance start_pos end_pos)
+;;
+
+let scan_identifier_or_bool (lexer : t)
+  : t * (Token.t Position.located, error Position.located) result
+  =
+  let start_pos = lexer.position in
+  let past_end_lexer = find_word_end lexer in
+  let end_pos = past_end_lexer.position in
+  let str = substring lexer start_pos end_pos in
+  let token =
+    match str with
+    | "true" -> Token.Value (Token.Value.Boolean true)
+    | "false" -> Token.Value (Token.Value.Boolean false)
+    | s -> Token.Identifier s
+  in
+  past_end_lexer, Ok (token, start_pos)
+;;
 
 (* main export: *)
 let next_token (lexer : t) : t * (Token.t Position.located, error Position.located) result
