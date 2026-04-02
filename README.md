@@ -2,7 +2,7 @@
 
 I hand maintain some .bib files as plain-text and need to convert them to markdown citations.
 
-Note that this assumes my own stripped down version of BibTeX, valid .bib files may be rejected.
+Note that this assumes my own stripped down version of BibTeX, valid .bib files may be rejected but i'll try to make sure my own .bib file will always be accepted by other tools. i.e. my dialect should be a strict subset of BibTeX.
 
 ## my dialect
 
