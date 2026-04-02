@@ -25,6 +25,10 @@ let print_entries =
   Array.iter (fun entry -> Printf.printf "%s\n" (Entry.show_raw_entry entry))
 ;;
 
+let () = Lexer.__test ()
+let () = Parser.__test ()
+let () = Validate.__test ()
+
 let () =
   let () = Printf.printf "%s\n" tiny_bib in
   let maybe_entries = Parser.parse tiny_bib in
