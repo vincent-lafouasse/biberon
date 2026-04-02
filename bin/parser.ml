@@ -55,8 +55,18 @@ let expect_key parser : t * (Entry.key, error Position.located) result =
   | _ -> parser, Error (ExpectedKey (Actual actual), location)
 ;;
 
-let expect_value _parser : t * (Entry.Value.t, error Position.located) result =
-  failwith "todo"
+let expect_value parser : t * (Entry.Value.t, error Position.located) result =
+  let actual, location = get parser in
+  match actual with
+  | Token.Value value ->
+    let value =
+      match value with
+      | Token.Value.Boolean b -> Entry.Value.Boolean b
+      | Token.Value.Integer i -> Entry.Value.Integer i
+      | Token.Value.String s -> Entry.Value.String s
+    in
+    advance parser, Ok value
+  | _ -> parser, Error (ExpectedValue (Actual actual), location)
 ;;
 
 (* main export probably *)
