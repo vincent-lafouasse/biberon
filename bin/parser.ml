@@ -1,11 +1,15 @@
+let pp_token_array fmt arr =
+  Format.pp_print_list (Position.pp_located Token.pp) fmt (Array.to_list arr)
+;;
+
 type t =
-  { tokens : Token.t Position.located Array.t
+  { tokens : Token.t Position.located array [@printer pp_token_array]
   ; index : int
   }
 [@@deriving show]
 
-type expected_token = Expected of Token.t
-type actual_token = Actual of Token.t
+type expected_token = Expected of Token.t [@@deriving show]
+type actual_token = Actual of Token.t [@@deriving show]
 
 type error =
   | ExpectedToken of expected_token * actual_token
