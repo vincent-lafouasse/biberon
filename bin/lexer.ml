@@ -307,13 +307,13 @@ let test_next_token_error () =
   expect (Result.is_error res) "unrecognized: !"
 ;;
 
-(* drain all tokens from a lexer into a list *)
+(* drain all tokens from a lexer into an array *)
 let tokenize input =
   let rec loop lexer acc =
     let lexer, res = next_token lexer in
     match res with
     | Error e -> Error e
-    | Ok (Token.Eof, _) -> Ok (List.rev acc)
+    | Ok (Token.Eof, _) -> Ok (Array.of_list (List.rev acc))
     | Ok tok -> loop lexer (tok :: acc)
   in
   loop (init input) []
@@ -342,16 +342,12 @@ let test_bib_realistic () =
   (match res with
    | Error _ -> ()
    | Ok tokens ->
-     let token_types = List.map fst tokens in
-     expect (List.mem Token.AtSign token_types) "article: contains @";
-     expect
-       (List.mem (Token.Identifier "article") token_types)
-       "article: contains ident 'article'";
-     expect
-       (List.mem (Token.Identifier "doe2024") token_types)
-       "article: contains key 'doe2024'";
-     expect (List.mem Token.Lbrace token_types) "article: contains {";
-     expect (List.mem Token.Rbrace token_types) "article: contains }");
+     let has tok = Array.exists (fun (t, _) -> t = tok) tokens in
+     expect (has Token.AtSign) "article: contains @";
+     expect (has (Token.Identifier "article")) "article: contains ident 'article'";
+     expect (has (Token.Identifier "doe2024")) "article: contains key 'doe2024'";
+     expect (has Token.Lbrace) "article: contains {";
+     expect (has Token.Rbrace) "article: contains }");
   let inproceedings =
     {|
 @inproceedings{smith2023,
