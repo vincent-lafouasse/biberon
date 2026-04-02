@@ -9,6 +9,7 @@ type error =
   | ExpectedEtype
   | ExpectedKey
   | ExpectedValue
+  | LexerError of Lexer.error
 [@@deriving show]
 
 let init input : t =
@@ -16,8 +17,13 @@ let init input : t =
   { lexer }
 ;;
 
-let init (input : string) : (t, Lexer.error Position.located) result =
+let init (input : string) : (t, error Position.located) result =
   match Lexer.tokenie input with
   | Ok tokens -> { tokens }
-  | Error err -> Error err
+  | Error err -> Error (LexerError err)
+;;
+
+(* main export probably *)
+let parse (input : string) : (Entry.raw_entry Array.t, error Position.located) result =
+  failwith "unimplemented"
 ;;
