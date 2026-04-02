@@ -126,19 +126,29 @@ let find_entry = advance_while (fn_not (Char.equal '@'))
    they are then caught in the exported `next_raw_entry` that wraps it all in a pure function *)
 
 exception NoEntryLeft
-exception ExpectedEtype
+
+type token =
+  | Etype
+  | Lbrace
+  | Rbrace
+  | Equal
+  | Key
+  | Value
+
+exception ExpectedToken of token (* maybe package the parser/position as well *)
 
 (* unsure if i need this, probably not *)
 let expect_char_eq_or_throw _parser _c = failwith "todo"
 
 let next_raw_entry_inner (parser : t) : t * Entry.raw_entry =
   let parser = find_entry parser in
+  (* parser is now either i) on '@' or ii) EOF *)
   let parser = if not (eof parser) then advance parser else raise NoEntryLeft in
-  let parser, etype_res = expect_identifier parser in
+  let past_ident_parser, etype_res = expect_identifier parser in
   let _parser, _etype =
     match etype_res with
-    | Ok ident -> parser, ident
-    | Error _err -> raise ExpectedEtype (* NOTE: maybe more granular *)
+    | Ok ident -> past_ident_parser, ident
+    | Error _err -> raise (ExpectedToken Etype)
   in
   failwith "todo"
 ;;
