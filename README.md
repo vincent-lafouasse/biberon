@@ -13,3 +13,9 @@ Note that this assumes my own stripped down version of BibTeX, valid .bib files 
 - months are required to use the standard BibTeX three-letter lowercase form `jan feb mar apr may jun jul aug sep oct nov dec`. i'm not down to parse arbitrary formats
 - no duplicate fields. i'm ignoring non-required fields so you can still put any field you want, just don't repeat them
 - probably other stuff that i'll document later
+
+## ideas for later
+
+- maybe allow some `@mapping` entries for text substitution, because no-one wants to write "IEEE International Conference on Acoustics, Speech and Signal Processing" five times in a row
+- or maybe those mappings could be passed from an optionally passed spec file, not sure
+- probably cover other citations styles. I intend for (loosely compliant) IEEE but might do JACS and ACM later, or AIP/APS/ASA for physics.
