@@ -307,9 +307,92 @@ let test_next_token_sequence () =
 ;;
 
 let test_next_token_error () =
-  (* unterminated string *)
   let _, res = next_token (init {|"unterminated|}) in
-  expect (Result.is_error res) "unterminated string is error"
+  expect (Result.is_error res) "unterminated string is error";
+  let _, res = next_token (init "?") in
+  expect (Result.is_error res) "unrecognized: ?";
+  let _, res = next_token (init "$") in
+  expect (Result.is_error res) "unrecognized: $";
+  let _, res = next_token (init "!") in
+  expect (Result.is_error res) "unrecognized: !"
+;;
+
+(* drain all tokens from a lexer into a list *)
+let tokenize input =
+  let rec loop lexer acc =
+    let lexer, res = next_token lexer in
+    match res with
+    | Error e -> Error e
+    | Ok (Token.Eof, _) -> Ok (List.rev acc)
+    | Ok tok -> loop lexer (tok :: acc)
+  in
+  loop (init input) []
+;;
+
+let show_token_list r =
+  [%show: (Token.t Position.located list, error Position.located) result] r
+;;
+
+let test_bib_realistic () =
+  let article =
+    {|
+@article{doe2024,
+  author = "Doe, J.",
+  title = "A Survey of Things",
+  year = 2024,
+  journal = "Journal of Things",
+  volume = 12,
+  number = 3,
+  pages = "1--10",
+  month = "Jun",
+  doi = "10.1234/jot.2024",
+  archive = "https://arxiv.org/abs/2024.00001"
+}
+|}
+  in
+  let res = tokenize article in
+  expect (Result.is_ok res) "article: no lex errors";
+  (* spot check a few tokens in the stream *)
+  (match res with
+   | Error _ -> ()
+   | Ok tokens ->
+     let token_types = List.map fst tokens in
+     expect (List.mem Token.AtSign token_types) "article: contains @";
+     expect
+       (List.mem (Token.Identifier "article") token_types)
+       "article: contains ident 'article'";
+     expect
+       (List.mem (Token.Identifier "doe2024") token_types)
+       "article: contains key 'doe2024'";
+     expect (List.mem Token.Lbrace token_types) "article: contains {";
+     expect (List.mem Token.Rbrace token_types) "article: contains }");
+  let inproceedings =
+    {|
+@inproceedings{smith2023,
+  author = "Smith, A. and Jones, B.",
+  title = "Fast Algorithms",
+  year = 2023,
+  booktitle = "Proceedings of the Conference on Speed",
+  pages = "42--55",
+  doi = "10.5678/conf.2023",
+  archive = "https://arxiv.org/abs/2023.99999"
+}
+|}
+  in
+  let res = tokenize inproceedings in
+  expect (Result.is_ok res) "inproceedings: no lex errors";
+  let misc =
+    {|
+@misc{blog2022,
+  author = "A. Blogger",
+  title = "Some Thoughts",
+  year = 2022,
+  archive = "https://example.com/post"
+}
+|}
+  in
+  let res = tokenize misc in
+  expect (Result.is_ok res) "misc: no lex errors"
 ;;
 
 let __test () =
@@ -323,5 +406,6 @@ let __test () =
   run_test "next_token: string" test_next_token_string;
   run_test "next_token: integer" test_next_token_integer;
   run_test "next_token: sequence" test_next_token_sequence;
-  run_test "next_token: error" test_next_token_error
+  run_test "next_token: error" test_next_token_error;
+  run_test "next_token: realistic bib" test_bib_realistic
 ;;
