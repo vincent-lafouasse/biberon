@@ -4,13 +4,18 @@ type t =
   }
 [@@deriving show]
 
+type expected_token = Expected of Token.t
+type actual_token = Actual of Token.t
+
 type error =
-  | ExpectedToken of Token.t
-  | ExpectedEtype
-  | ExpectedKey
-  | ExpectedValue
+  | ExpectedToken of expected_token * actual_token
+  | ExpectedEtype of actual_token
+  | ExpectedKey of actual_token
+  | ExpectedValue of actual_token
   | LexerError of Lexer.error
 [@@deriving show]
+
+let token_mismatch expected actual = ExpectedToken (Expected expected, Actual actual)
 
 let init (input : string) : (t, error Position.located) result =
   match Lexer.tokenie input with
@@ -26,10 +31,10 @@ let advance parser =
 ;;
 
 let expect_token parser expected : t * (unit, error Position.located) result =
-  let token, location = get parser in
-  match token with
+  let actual, location = get parser in
+  match actual with
   | expected -> advance parser, Ok ()
-  | _ -> parser, Error (ExpectedToken expected, location)
+  | _ -> parser, Error (token_mismatch expected actual, location)
 ;;
 
 (* main export probably *)
