@@ -8,6 +8,7 @@ end
 type t =
   | Identifier of string
   | Value of Value.t
+  | EqualSign
   | Lbrace
   | Rbrace
   | Atsign
