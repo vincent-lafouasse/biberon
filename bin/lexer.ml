@@ -105,7 +105,17 @@ let scan_string (lexer : t)
     if eof lexer || not (Char.equal (get_unsafe lexer) '"')
     then failwith "unreachable: string not starting with quote"
   in
-  failwith "string scanning todo"
+  let start_lexer = lexer in
+  let past_opening_quote_lexer = advance start_lexer in
+  let on_closing_quote_lexer, str =
+    scan_while past_opening_quote_lexer (fn_not (Char.equal '"'))
+  in
+  match get on_closing_quote_lexer with
+  | None -> start_lexer, Error (UnterminatedString, start_lexer.position)
+  | Some c when c = '"' ->
+    ( advance on_closing_quote_lexer
+    , Ok (Token.Value (Token.Value.String str), start_lexer.position) )
+  | _ -> failwith "unreachable: scan_while didn't land on a quote or EOF"
 ;;
 
 (* main export: *)
