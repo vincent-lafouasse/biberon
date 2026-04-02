@@ -11,5 +11,5 @@ type t =
   | EqualSign
   | Lbrace
   | Rbrace
-  | Atsign
+  | AtSign
   | Eof

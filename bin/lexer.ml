@@ -78,7 +78,7 @@ let next_token (lexer : t) : t * (Token.t Position.located, error Position.locat
   | None -> lexer, Ok (Token.Eof, lexer.position)
   | Some c ->
     (match c with
-     | '@' -> advance lexer, Ok (Token.Atsign, lexer.position)
+     | '@' -> advance lexer, Ok (Token.AtSign, lexer.position)
      | '{' -> advance lexer, Ok (Token.Lbrace, lexer.position)
      | '}' -> advance lexer, Ok (Token.Rbrace, lexer.position)
      | '=' -> advance lexer, Ok (Token.EqualSign, lexer.position)
