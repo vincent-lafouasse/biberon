@@ -10,6 +10,11 @@ type etype = Etype of string [@@deriving show]
 type tag = Tag of string [@@deriving show]
 type key = Key of string [@@deriving show]
 type field = key * Value.t [@@deriving show]
+type doi =
+  { prefix : string
+  ; suffix : string
+  }
+[@@deriving show]
 
 type author =
   { last : string
@@ -46,14 +51,14 @@ type article_fields =
   ; pages : string * string
   ; number : int
   ; month : month
-  ; doi : string
+  ; doi : doi
   }
 [@@deriving show]
 
 type inproceedings_fields =
   { booktitle : string
   ; pages : string * string
-  ; doi : string
+  ; doi : doi
   }
 [@@deriving show]
 
