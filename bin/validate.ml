@@ -134,12 +134,13 @@ let parse_single_author author_str : (author, string) result =
   let parts : string list = Str.split (Str.regexp ",") author_str in
   let parts : (string * string, string) result =
     match parts with
-    | [ last; first ] -> Ok (last, first)
-    | _ -> Error author_str
+    | [ last; first ] -> Ok (String.trim last, String.trim first)
+    | _ -> Error (String.trim author_str)
   in
   let split_first_names (parts : string * string) : author =
     let last, first = parts in
     let first : string list = Str.split (Str.regexp " ") first in
+    let first : string list = List.map String.trim first in
     { last; first }
   in
   Result.map split_first_names parts
