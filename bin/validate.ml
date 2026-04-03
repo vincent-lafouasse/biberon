@@ -1,7 +1,7 @@
 type error =
   | DuplicateEntry of string
   | MalformedEntry
-  | DuplicateField
+  | DuplicateField of Entry.key * Entry.tag
   | UnknownEtype
   | MissingCoreField
   | MissingSpecificField
@@ -47,6 +47,18 @@ let assert_no_duplicate_entry (raw_lib : Entry.raw_entry array) : (unit, error) 
   match maybe_duplicate with
   | None -> Ok ()
   | Some tag -> Error (DuplicateEntry tag)
+;;
+
+let assert_no_duplicate_field (raw_entry : Entry.raw_entry) : (unit, error) result =
+  let field_name (field : Entry.field) : string =
+    let key, _value = field in
+    let (Entry.Key key_name) = key in
+    key_name
+  in
+  let maybe_duplicate : string option = find_duplicates field_name raw_entry.fields in
+  match maybe_duplicate with
+  | None -> Ok ()
+  | Some key_name -> Error (DuplicateField (Entry.Key key_name, raw_entry.tag))
 ;;
 
 (* ----------tests---------- *)
