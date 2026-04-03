@@ -7,7 +7,7 @@ type error =
   | DuplicateEntry of tag
   | DuplicateField of key * tag
   | ValueTypeMismatch of key * tag * Value.kind expected * Value.kind actual
-  | MissingCoreField of key * tag
+  | MissingField of key * tag
 [@@deriving show]
 
 module StringMap = Map.Make (String)
@@ -93,8 +93,7 @@ let get_string_field (entry : raw_entry) (key : key) : (string, error) result =
   let maybe_value : Value.t option = locate_field entry key_name in
   (* transmute option to error for monadic chaining *)
   let value_res : (Value.t, error) result =
-    (* NOTE: wait i don't know if its a core field yet hmmmm *)
-    Option.to_result ~none:(MissingCoreField (key, entry.tag)) maybe_value
+    Option.to_result ~none:(MissingField (key, entry.tag)) maybe_value
   in
   (* err if value is not a string, unwrap it otherwise *)
   let unwrap_string_or_err (value : Value.t) : (string, error) result =
