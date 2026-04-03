@@ -61,6 +61,17 @@ let assert_no_duplicate_field (raw_entry : Entry.raw_entry) : (unit, error) resu
   | Some key_name -> Error (DuplicateField (Entry.Key key_name, raw_entry.tag))
 ;;
 
+let locate_field (raw_entry : Entry.raw_entry) (field_name : string)
+  : Entry.Value.t option
+  =
+  let maybe_field : Entry.field option =
+    Array.find_opt
+      (fun ((key, _value) : Entry.field) -> key = Entry.Key field_name)
+      raw_entry.fields
+  in
+  Option.map (fun (_key, value) -> value) maybe_field
+;;
+
 (* ----------tests---------- *)
 
 let expect cond msg = if not cond then failwith ("FAIL: " ^ msg)
