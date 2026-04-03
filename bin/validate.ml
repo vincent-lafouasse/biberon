@@ -37,7 +37,7 @@ let assert_no_duplicates (raw_lib : Entry.raw_entry array) : (unit, error) resul
   let frequency_map = Array.fold_left update_count StringMap.empty raw_lib in
   let is_duplicate : string -> int -> bool = fun _tag count -> count > 1 in
   let duplicates = StringMap.filter is_duplicate frequency_map in
-  match StringMap.find_first_opt (fun _ -> true) duplicates with
+  match StringMap.choose_opt duplicates with
   | None -> Ok ()
   | Some (tag, _count) -> Error (DuplicateEntry tag)
 ;;
