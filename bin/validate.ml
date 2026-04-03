@@ -75,12 +75,20 @@ let locate_field (raw_entry : raw_entry) (field_name : string) : Value.t option 
 ;;
 
 let get_common_fields (raw_entry : raw_entry) : (common_fields, error) result =
-  let _ = raw_entry in
+  let maybe_title = locate_field raw_entry "title" in
+  let title_res =
+    Option.to_result ~none:(MissingCoreField (Key "title", raw_entry.tag)) maybe_title
+  in
+  let check_type (expected_kind : Value.kind) (value : Value.t) : (Value.t, error) result =
+    if Value.kind_of value = expected_kind
+    then Ok value
+    else (
+      let expected = Expected expected_kind in
+      let actual = Actual (Value.kind_of value) in
+      Error (ValueTypeMismatch (Key "title", raw_entry.tag, expected, actual)))
+  in
+  let _title_res = Result.bind title_res (check_type Value.KString) in
   failwith "todo"
-;;
-
-let value_type_match (value : Value.t) (expected_kind : Value.kind) : bool =
-  Value.kind_of value = expected_kind
 ;;
 
 (* ----------tests---------- *)
