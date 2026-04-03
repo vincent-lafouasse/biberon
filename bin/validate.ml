@@ -6,6 +6,7 @@ type 'a actual = Actual of 'a [@@deriving show]
 type error =
   | DuplicateEntry of tag
   | DuplicateField of key * tag
+  | ValueTypeMismatch of key * Value.kind expected * Value.kind actual
 [@@deriving show]
 
 module StringMap = Map.Make (String)
