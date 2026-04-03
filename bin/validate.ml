@@ -79,6 +79,10 @@ let get_common_fields (raw_entry : raw_entry) : (common_fields, error) result =
   failwith "todo"
 ;;
 
+let value_type_match (value : Value.t) (expected_kind : Value.kind) : bool =
+  Value.kind_of value = expected_kind
+;;
+
 (* ----------tests---------- *)
 
 let expect cond msg = if not cond then failwith ("FAIL: " ^ msg)
