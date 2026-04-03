@@ -5,6 +5,7 @@ type error =
   | UnknownEtype
   | MissingCoreField
   | MissingSpecificField
+[@@deriving show]
 
 module StringMap = Map.Make (String)
 
@@ -20,28 +21,25 @@ module StringMap = Map.Make (String)
 *)
 
 let assert_no_duplicates (raw_lib : Entry.raw_entry array) : (unit, error) result =
+  let tag_of (entry : Entry.raw_entry) : string =
+    let (Entry.Tag tag) = entry.tag in
+    tag
+  in
   let update_count map entry =
+    let tag = tag_of entry in
     let count =
-      match StringMap.find_opt entry.tag with
+      match StringMap.find_opt tag map with
       | None -> 1
       | Some count -> count + 1
     in
-    StringMap.add entry.tag count map
+    StringMap.add tag count map
   in
-  let frequency_map = Array.fold_left update_count raw_lib StringMap.empty in
-  let is_duplicate : string -> int -> bool = fun (_tag, count) -> count > 1 in
+  let frequency_map = Array.fold_left update_count StringMap.empty raw_lib in
+  let is_duplicate : string -> int -> bool = fun _tag count -> count > 1 in
   let duplicates = StringMap.filter is_duplicate frequency_map in
   match StringMap.find_first_opt (fun _ -> true) duplicates with
   | None -> Ok ()
-  | Some tag -> Error (DuplicateEntry tag)
-;;
-
-let validate_entry (_raw_entry : Entry.raw_entry) : (Entry.bib_entry, error) result =
-  failwith "todo"
-;;
-
-let validate_entry (_raw_lib : Entry.raw_entry array) : (Entry.t array, error) result =
-  failwith "todo"
+  | Some (tag, _count) -> Error (DuplicateEntry tag)
 ;;
 
 (* ----------tests---------- *)
