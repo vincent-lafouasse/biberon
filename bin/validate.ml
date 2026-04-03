@@ -81,6 +81,23 @@ let unwrap_string (value : Value.t) : string =
   | _ -> failwith "unwrapped wrong value type"
 ;;
 
+let get_string_field (entry : raw_entry) (key : key) : (string, error) result =
+  let (Key key_name) = key in
+  let maybe_value : Value.t option = locate_field entry key_name in
+  let value_res : (Value.t, error) result =
+    Option.to_result ~none:(MissingCoreField (key, entry.tag)) maybe_value
+  in
+  let unwrap_string_or_err (value : Value.t) : (string, error) result =
+    if Value.kind_of value = Value.KString
+    then Ok (unwrap_string value)
+    else (
+      let expected = Expected Value.KString in
+      let actual = Actual (Value.kind_of value) in
+      Error (ValueTypeMismatch (key, entry.tag, expected, actual)))
+  in
+  Result.bind value_res unwrap_string_or_err
+;;
+
 let get_common_fields (raw_entry : raw_entry) : (common_fields, error) result =
   (* could probably take that into a get_string_field function *)
   let maybe_title = locate_field raw_entry "title" in
