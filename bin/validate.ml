@@ -129,7 +129,28 @@ let get_common_fields (_raw_entry : raw_entry) : (common_fields, error) result =
   let title_key = Key "title" in
   let year_key = Key "year" in
   let archive_key = Key "archive" in
-  let _ = author_key, title_key, year_key, archive_key in
+  (* try and gather all of them *)
+  let author_str_res = get_string_field author_key in
+  let title_res = get_string_field title_key in
+  let archive_res = get_string_field archive_key in
+  let year_res = get_int_field year_key in
+  (* check if any err'd. if so return any of them. all fields are mandatory so
+     any missing field is fatal. not very ergnonomic for users but should be
+     fine for now*)
+  let maybe_err : error option =
+    match author_str_res with
+    | Error e -> Some e
+    | _ ->
+      (match title_res with
+       | Error e -> Some e
+       | _ ->
+         (match archive_res with
+          | Error e -> Some e
+          | _ ->
+            (match year_res with
+             | Error e -> Some e
+             | _ -> None)))
+  in
   failwith "todo"
 ;;
 
