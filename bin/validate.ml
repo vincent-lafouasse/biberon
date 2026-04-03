@@ -16,9 +16,10 @@ module StringMap = Map.Make (String)
     - package them in a finished entry
 *)
 
-(* before all that, i might check that no two entries have the same tag, this
-   way i can use just the tag to report errors
-*)
+(* checking for duplicate entries (resp. duplicate fields) and making
+   duplication fatal makes it so that past the duplication detection, errors
+   can use entry tag (resp. field key) to refer to the parent entry
+   unambiguously *)
 
 (* this will error the same way whether there are 1 or multiple duplications
    i might return a list of duplicates instead but for now that's fine *)
