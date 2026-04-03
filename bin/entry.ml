@@ -4,6 +4,19 @@ module Value = struct
     | Integer of int
     | String of string
   [@@deriving show]
+
+  type kind =
+    | KBoolean
+    | KInteger
+    | KString
+  [@@deriving show]
+
+  let kind_of (value : t) : kind =
+    match value with
+    | Boolean _ -> KBoolean
+    | Integer _ -> KInteger
+    | String _ -> KString
+  ;;
 end
 
 type etype = Etype of string [@@deriving show]
