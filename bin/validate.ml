@@ -128,9 +128,63 @@ let test_assert_no_duplicate_entry () =
     show_result
 ;;
 
+let make_entry_with_fields tag fields =
+  { Entry.etype = Entry.Etype "misc"; tag = Entry.Tag tag; fields }
+
+let field k v = Entry.Key k, Entry.Value.String v
+
+let show_field_result r = [%show: (unit, error) result] r
+let show_value_opt r = [%show: Entry.Value.t option] r
+
+let test_assert_no_duplicate_field () =
+  let no_fields = make_entry_with_fields "e" [||] in
+  expect_eq (Ok ()) (assert_no_duplicate_field no_fields) "no fields: ok" show_field_result;
+  let distinct = make_entry_with_fields "e" [| field "a" "1"; field "b" "2" |] in
+  expect_eq (Ok ()) (assert_no_duplicate_field distinct) "distinct fields: ok" show_field_result;
+  let dup = make_entry_with_fields "e" [| field "a" "1"; field "a" "2" |] in
+  expect_eq
+    (Error (DuplicateField (Entry.Key "a", Entry.Tag "e")))
+    (assert_no_duplicate_field dup)
+    "duplicate field: reports key and tag"
+    show_field_result;
+  let dup_not_first =
+    make_entry_with_fields "e" [| field "a" "1"; field "b" "2"; field "b" "3" |]
+  in
+  expect_eq
+    (Error (DuplicateField (Entry.Key "b", Entry.Tag "e")))
+    (assert_no_duplicate_field dup_not_first)
+    "duplicate not first: reports correct key"
+    show_field_result
+
+let test_locate_field () =
+  let entry = make_entry_with_fields "e" [| field "author" "Doe"; field "year" "2024" |] in
+  expect_eq
+    (Some (Entry.Value.String "Doe"))
+    (locate_field entry "author")
+    "found: author"
+    show_value_opt;
+  expect_eq
+    (Some (Entry.Value.String "2024"))
+    (locate_field entry "year")
+    "found: year"
+    show_value_opt;
+  expect_eq
+    None
+    (locate_field entry "title")
+    "not found: title"
+    show_value_opt;
+  expect_eq
+    None
+    (locate_field (make_entry "empty") "author")
+    "empty entry: not found"
+    show_value_opt
+
 let run_test name f =
   f ();
   print_endline (name ^ " ok")
 ;;
 
-let __test () = run_test "assert_no_duplicate_entry" test_assert_no_duplicate_entry
+let __test () =
+  run_test "assert_no_duplicate_entry" test_assert_no_duplicate_entry;
+  run_test "assert_no_duplicate_field" test_assert_no_duplicate_field;
+  run_test "locate_field" test_locate_field
