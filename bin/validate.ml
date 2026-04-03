@@ -128,10 +128,14 @@ let get_int_field (entry : raw_entry) (key : key) : (int, error) result =
    author is malformed. the error will be wrapped in a Validate.error at the
    call site*)
 let parse_single_author author_str : (author, string) result =
-  let parts = Str.split (Str.regexp ",") author_str in
-  match parts with
-  | [ (last, first) ] -> Ok { last = String.trim last; first = String.trim first }
-  | _ -> Error author_str
+  let parts : string list = Str.split (Str.regexp ",") author_str in
+  let parts : (string * string, string) result =
+    match parts with
+    | [ (last, first) ] -> Ok (last, first)
+    | _ -> Error author_str
+  in
+  let split_first_names = Str.split (Str.regexp " ") in
+  failwith "todo"
 ;;
 
 let parse_author_list (author_list_str : string) : (author list, error) result =
