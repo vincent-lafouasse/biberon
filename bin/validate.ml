@@ -124,6 +124,11 @@ let get_int_field (entry : raw_entry) (key : key) : (int, error) result =
   Result.bind value_res unwrap_int_or_err
 ;;
 
+let parse_author_list (author_str : string) : (author list, error) result =
+  let _ = author_str in
+  failwith "todo"
+;;
+
 let get_common_fields (_raw_entry : raw_entry) : (common_fields, error) result =
   let author_key = Key "author" in
   let title_key = Key "title" in
