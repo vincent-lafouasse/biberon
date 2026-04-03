@@ -124,23 +124,12 @@ let get_int_field (entry : raw_entry) (key : key) : (int, error) result =
   Result.bind value_res unwrap_int_or_err
 ;;
 
-let get_common_fields (raw_entry : raw_entry) : (common_fields, error) result =
-  (* could probably take that into a get_string_field function *)
-  let maybe_title = locate_field raw_entry "title" in
-  let title_res =
-    Option.to_result ~none:(MissingField (Key "title", raw_entry.tag)) maybe_title
-  in
-  let check_type (expected_kind : Value.kind) (value : Value.t) : (Value.t, error) result =
-    if Value.kind_of value = expected_kind
-    then Ok value
-    else (
-      let expected = Expected expected_kind in
-      let actual = Actual (Value.kind_of value) in
-      Error (ValueTypeMismatch (Key "title", raw_entry.tag, expected, actual)))
-  in
-  let title_res = Result.bind title_res (check_type Value.KString) in
-  let title_res : (string, error) result = Result.map unwrap_string title_res in
-  let _ = title_res in
+let get_common_fields (_raw_entry : raw_entry) : (common_fields, error) result =
+  let author_key = Key "author" in
+  let title_key = Key "title" in
+  let year_key = Key "year" in
+  let archive_key = Key "archive" in
+  let _ = author_key, title_key, year_key, archive_key in
   failwith "todo"
 ;;
 
