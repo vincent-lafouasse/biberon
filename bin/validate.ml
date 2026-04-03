@@ -74,6 +74,13 @@ let locate_field (raw_entry : raw_entry) (field_name : string) : Value.t option 
   Option.map (fun (_key, value) -> value) maybe_field
 ;;
 
+(* probably unsafe, just be careful. should only be called after type check *)
+let unwrap_string (value : Value.t) : string =
+  match value with
+  | Value.String str -> str
+  | _ -> failwith "unwrapped wrong value type"
+;;
+
 let get_common_fields (raw_entry : raw_entry) : (common_fields, error) result =
   let maybe_title = locate_field raw_entry "title" in
   let title_res =
