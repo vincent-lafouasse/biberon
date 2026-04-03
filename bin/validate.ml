@@ -111,7 +111,7 @@ let get_common_fields (raw_entry : raw_entry) : (common_fields, error) result =
   (* could probably take that into a get_string_field function *)
   let maybe_title = locate_field raw_entry "title" in
   let title_res =
-    Option.to_result ~none:(MissingCoreField (Key "title", raw_entry.tag)) maybe_title
+    Option.to_result ~none:(MissingField (Key "title", raw_entry.tag)) maybe_title
   in
   let check_type (expected_kind : Value.kind) (value : Value.t) : (Value.t, error) result =
     if Value.kind_of value = expected_kind
