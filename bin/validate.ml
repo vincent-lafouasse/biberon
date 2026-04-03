@@ -1,5 +1,5 @@
 type error =
-  | DuplicateEntry of string
+  | DuplicateEntry of Entry.tag
   | MalformedEntry
   | DuplicateField of Entry.key * Entry.tag
   | UnknownEtype
@@ -46,7 +46,7 @@ let assert_no_duplicate_entry (raw_lib : Entry.raw_entry array) : (unit, error) 
   let maybe_duplicate : string option = find_duplicates tag_of raw_lib in
   match maybe_duplicate with
   | None -> Ok ()
-  | Some tag -> Error (DuplicateEntry tag)
+  | Some tag -> Error (DuplicateEntry (Entry.Tag tag))
 ;;
 
 let assert_no_duplicate_field (raw_entry : Entry.raw_entry) : (unit, error) result =
@@ -99,19 +99,19 @@ let test_assert_no_duplicate_entry () =
     show_result;
   (* single duplication *)
   expect_eq
-    (Error (DuplicateEntry "a"))
+    (Error (DuplicateEntry (Entry.Tag "a")))
     (assert_no_duplicate_entry [| make_entry "a"; make_entry "a" |])
     "single duplication: reports duplicate tag"
     show_result;
   (* duplicate is not the only entry *)
   expect_eq
-    (Error (DuplicateEntry "b"))
+    (Error (DuplicateEntry (Entry.Tag "b")))
     (assert_no_duplicate_entry [| make_entry "a"; make_entry "b"; make_entry "b" |])
     "duplicate among others: reports duplicate tag"
     show_result;
   (* duplicate appears first *)
   expect_eq
-    (Error (DuplicateEntry "a"))
+    (Error (DuplicateEntry (Entry.Tag "a")))
     (assert_no_duplicate_entry [| make_entry "a"; make_entry "b"; make_entry "a" |])
     "duplicate appears first: reports correct tag"
     show_result
