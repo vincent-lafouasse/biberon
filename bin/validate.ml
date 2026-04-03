@@ -94,7 +94,9 @@ let get_common_fields (raw_entry : raw_entry) : (common_fields, error) result =
       let actual = Actual (Value.kind_of value) in
       Error (ValueTypeMismatch (Key "title", raw_entry.tag, expected, actual)))
   in
-  let _title_res = Result.bind title_res (check_type Value.KString) in
+  let title_res = Result.bind title_res (check_type Value.KString) in
+  let title_res : (string, error) result = Result.map unwrap_string title_res in
+  let _ = title_res in
   failwith "todo"
 ;;
 
