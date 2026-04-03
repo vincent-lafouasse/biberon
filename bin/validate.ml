@@ -7,6 +7,7 @@ type error =
   | DuplicateEntry of tag
   | DuplicateField of key * tag
   | ValueTypeMismatch of key * tag * Value.kind expected * Value.kind actual
+  | MissingCoreField of key * tag
 [@@deriving show]
 
 module StringMap = Map.Make (String)
