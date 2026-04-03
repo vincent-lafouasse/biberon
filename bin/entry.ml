@@ -10,8 +10,15 @@ type etype = Etype of string [@@deriving show]
 type tag = Tag of string [@@deriving show]
 type key = Key of string [@@deriving show]
 type field = key * Value.t [@@deriving show]
+
+type author =
+  { last : string
+  ; first : string list
+  }
+[@@deriving show]
+
 type common_fields =
-  { author : string
+  { author : author list
   ; title : string
   ; year : int
   ; archive : string
