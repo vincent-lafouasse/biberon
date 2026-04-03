@@ -82,6 +82,7 @@ let unwrap_string (value : Value.t) : string =
 ;;
 
 let get_common_fields (raw_entry : raw_entry) : (common_fields, error) result =
+  (* could probably take that into a get_string_field function *)
   let maybe_title = locate_field raw_entry "title" in
   let title_res =
     Option.to_result ~none:(MissingCoreField (Key "title", raw_entry.tag)) maybe_title
