@@ -107,6 +107,23 @@ let get_string_field (entry : raw_entry) (key : key) : (string, error) result =
   Result.bind value_res unwrap_string_or_err
 ;;
 
+let get_int_field (entry : raw_entry) (key : key) : (int, error) result =
+  let (Key key_name) = key in
+  let maybe_value : Value.t option = locate_field entry key_name in
+  let value_res : (Value.t, error) result =
+    Option.to_result ~none:(MissingField (key, entry.tag)) maybe_value
+  in
+  let unwrap_int_or_err (value : Value.t) : (int, error) result =
+    if Value.kind_of value = Value.KInteger
+    then Ok (unwrap_int value)
+    else (
+      let expected = Expected Value.KInteger in
+      let actual = Actual (Value.kind_of value) in
+      Error (ValueTypeMismatch (key, entry.tag, expected, actual)))
+  in
+  Result.bind value_res unwrap_int_or_err
+;;
+
 let get_common_fields (raw_entry : raw_entry) : (common_fields, error) result =
   (* could probably take that into a get_string_field function *)
   let maybe_title = locate_field raw_entry "title" in
