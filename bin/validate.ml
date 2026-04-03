@@ -8,6 +8,7 @@ type error =
   | DuplicateField of key * tag
   | ValueTypeMismatch of key * tag * Value.kind expected * Value.kind actual
   | MissingField of key * tag
+  | MalformedAuthorName of string * tag
 [@@deriving show]
 
 module StringMap = Map.Make (String)
@@ -127,6 +128,8 @@ let get_int_field (entry : raw_entry) (key : key) : (int, error) result =
 (* error payload is its own raw input, this way i can keep track of which
    author is malformed. the error will be wrapped in a Validate.error at the
    call site*)
+(* returning `MalformedAuthorName of string * tag` means we have to be in a
+   scope where we know the entry tag*)
 let parse_single_author author_str : (author, string) result =
   let parts : string list = Str.split (Str.regexp ",") author_str in
   let parts : (string * string, string) result =
@@ -142,9 +145,14 @@ let parse_single_author author_str : (author, string) result =
   Result.map split_first_names parts
 ;;
 
-let parse_author_list (author_list_str : string) : (author list, error) result =
-  let _raw_author_list = Str.split (Str.regexp "and") author_list_str in
-  failwith "todo"
+let parse_author_list (author_list_str : string) : (author list, string) result =
+  let raw_author_list = Str.split (Str.regexp "and") author_list_str in
+  let author_res_list = List.map parse_single_author raw_author_list in
+  match List.find_opt Result.is_error author_res_list with
+  | Some bad_name_error ->
+    let bad_name = Result.get_error bad_name_error in
+    Error bad_name
+  | None -> Ok (List.map Result.get_ok author_res_list)
 ;;
 
 let get_common_fields (entry : raw_entry) : (common_fields, error) result =
