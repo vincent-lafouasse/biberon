@@ -20,6 +20,8 @@ module StringMap = Map.Make (String)
    way i can use just the tag to report errors
 *)
 
+(* this will error the same way whether there are 1 or multiple duplications
+   i might return a list of duplicates instead but for now that's fine *)
 let find_duplicates (key_of : 'a -> string) (collection : 'a array) : string option =
   let update_count map (e : 'a) =
     let key = key_of e in
