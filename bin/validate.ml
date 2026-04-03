@@ -78,7 +78,7 @@ let locate_field (raw_entry : raw_entry) (field_name : string) : Value.t option 
 let unwrap_string (value : Value.t) : string =
   match value with
   | Value.String str -> str
-  | _ -> failwith "unwrapped wrong value type"
+  | _ -> failwith "unwrap_string on non string value"
 ;;
 
 let unwrap_int (value : Value.t) : int =
