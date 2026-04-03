@@ -14,8 +14,14 @@ Note that this assumes my own stripped down version of BibTeX, valid .bib files 
 - no duplicate fields. i'm ignoring non-required fields so you can still put any field you want, just don't repeat them
 - probably other stuff that i'll document later
 
+## citation style
+
+in a loosely compliant IEEE style. i'm not interested in being legally compliant (i'd use a tool for that if it matters that much), i just want the citations to look the way they should.
+
+styles i'm considering post 1.0 are ACS (chemistry nostalgia), ACM (if ocaml lights a spark in me), AIP/APS (for physics, maybe even ASA). maybe even APA, MLA, Nature if i want to cover common mainstream styles as well.
+
 ## ideas for later
 
 - maybe allow some `@mapping` entries for text substitution, because no-one wants to write "IEEE International Conference on Acoustics, Speech and Signal Processing" five times in a row
 - or maybe those mappings could be passed from an optionally passed spec file, not sure
-- probably cover other citations styles. I intend for (loosely compliant) IEEE but might do JACS and ACM later, or AIP/APS/ASA for physics.
+- cover more citation styles
