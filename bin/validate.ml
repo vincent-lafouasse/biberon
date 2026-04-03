@@ -297,6 +297,57 @@ let test_locate_field () =
     show_value_opt
 ;;
 
+let show_author_list_result r = [%show: (author list, string) result] r
+
+let test_parse_author_list () =
+  (* single author, comma format *)
+  expect_eq
+    (Ok [ { last = "Doe"; first = [ "J." ] } ])
+    (parse_author_list "Doe, J.")
+    "single author comma format"
+    show_author_list_result;
+  (* single author, multiple first names *)
+  expect_eq
+    (Ok [ { last = "Doe"; first = [ "John"; "A." ] } ])
+    (parse_author_list "Doe, John A.")
+    "single author multiple first names"
+    show_author_list_result;
+  (* two authors *)
+  expect_eq
+    (Ok [ { last = "Doe"; first = [ "J." ] }; { last = "Smith"; first = [ "A." ] } ])
+    (parse_author_list "Doe, J. and Smith, A.")
+    "two authors"
+    show_author_list_result;
+  (* three authors *)
+  expect_eq
+    (Ok
+       [ { last = "Doe"; first = [ "J." ] }
+       ; { last = "Smith"; first = [ "A." ] }
+       ; { last = "Jones"; first = [ "B." ] }
+       ])
+    (parse_author_list "Doe, J. and Smith, A. and Jones, B.")
+    "three authors"
+    show_author_list_result;
+  (* malformed: no comma, single author *)
+  expect_eq
+    (Error "John Doe")
+    (parse_author_list "John Doe")
+    "malformed: no comma"
+    show_author_list_result;
+  (* malformed: first author is bad, second is good — finds first *)
+  expect_eq
+    (Error "John Doe")
+    (parse_author_list "John Doe and Smith, A.")
+    "malformed first author reported"
+    show_author_list_result;
+  (* malformed: first is good, second is bad — finds first bad *)
+  expect_eq
+    (Error "John Smith")
+    (parse_author_list "Doe, J. and John Smith")
+    "malformed second author reported"
+    show_author_list_result
+;;
+
 let run_test name f =
   f ();
   print_endline (name ^ " ok")
@@ -305,5 +356,6 @@ let run_test name f =
 let __test () =
   run_test "assert_no_duplicate_entry" test_assert_no_duplicate_entry;
   run_test "assert_no_duplicate_field" test_assert_no_duplicate_field;
-  run_test "locate_field" test_locate_field
+  run_test "locate_field" test_locate_field;
+  run_test "parse_author_list" test_parse_author_list
 ;;
