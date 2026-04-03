@@ -74,6 +74,11 @@ let locate_field (raw_entry : raw_entry) (field_name : string) : Value.t option 
   Option.map (fun (_key, value) -> value) maybe_field
 ;;
 
+let get_common_fields (raw_entry : raw_entry) : (common_fields, error) result =
+  let _ = raw_entry in
+  failwith "todo"
+;;
+
 (* ----------tests---------- *)
 
 let expect cond msg = if not cond then failwith ("FAIL: " ^ msg)
