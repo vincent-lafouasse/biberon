@@ -85,6 +85,7 @@ let get_string_field (entry : raw_entry) (key : key) : (string, error) result =
   let (Key key_name) = key in
   let maybe_value : Value.t option = locate_field entry key_name in
   let value_res : (Value.t, error) result =
+    (* NOTE: wait i don't know if its a core field yet hmmmm *)
     Option.to_result ~none:(MissingCoreField (key, entry.tag)) maybe_value
   in
   let unwrap_string_or_err (value : Value.t) : (string, error) result =
