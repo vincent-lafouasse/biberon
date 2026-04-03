@@ -81,6 +81,12 @@ let unwrap_string (value : Value.t) : string =
   | _ -> failwith "unwrapped wrong value type"
 ;;
 
+let unwrap_int (value : Value.t) : int =
+  match value with
+  | Value.Integer i -> i
+  | _ -> failwith "unwrap_int on non int value"
+;;
+
 let get_string_field (entry : raw_entry) (key : key) : (string, error) result =
   let (Key key_name) = key in
   (* locate *)
