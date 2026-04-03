@@ -1,10 +1,11 @@
+open Entry
+
+type 'a expected = Expected of 'a [@@deriving show]
+type 'a actual = Actual of 'a [@@deriving show]
+
 type error =
-  | DuplicateEntry of Entry.tag
-  | MalformedEntry
-  | DuplicateField of Entry.key * Entry.tag
-  | UnknownEtype
-  | MissingCoreField
-  | MissingSpecificField
+  | DuplicateEntry of tag
+  | DuplicateField of key * tag
 [@@deriving show]
 
 module StringMap = Map.Make (String)
@@ -41,36 +42,32 @@ let find_duplicates (key_of : 'a -> string) (collection : 'a array) : string opt
   | Some (tag, _count) -> Some tag
 ;;
 
-let assert_no_duplicate_entry (raw_lib : Entry.raw_entry array) : (unit, error) result =
-  let tag_of (entry : Entry.raw_entry) : string =
-    let (Entry.Tag tag) = entry.tag in
+let assert_no_duplicate_entry (raw_lib : raw_entry array) : (unit, error) result =
+  let tag_of (entry : raw_entry) : string =
+    let (Tag tag) = entry.tag in
     tag
   in
   let maybe_duplicate : string option = find_duplicates tag_of raw_lib in
   match maybe_duplicate with
   | None -> Ok ()
-  | Some tag -> Error (DuplicateEntry (Entry.Tag tag))
+  | Some tag -> Error (DuplicateEntry (Tag tag))
 ;;
 
-let assert_no_duplicate_field (raw_entry : Entry.raw_entry) : (unit, error) result =
-  let field_name (field : Entry.field) : string =
+let assert_no_duplicate_field (raw_entry : raw_entry) : (unit, error) result =
+  let field_name (field : field) : string =
     let key, _value = field in
-    let (Entry.Key key_name) = key in
+    let (Key key_name) = key in
     key_name
   in
   let maybe_duplicate : string option = find_duplicates field_name raw_entry.fields in
   match maybe_duplicate with
   | None -> Ok ()
-  | Some key_name -> Error (DuplicateField (Entry.Key key_name, raw_entry.tag))
+  | Some key_name -> Error (DuplicateField (Key key_name, raw_entry.tag))
 ;;
 
-let locate_field (raw_entry : Entry.raw_entry) (field_name : string)
-  : Entry.Value.t option
-  =
-  let maybe_field : Entry.field option =
-    Array.find_opt
-      (fun ((key, _value) : Entry.field) -> key = Entry.Key field_name)
-      raw_entry.fields
+let locate_field (raw_entry : raw_entry) (field_name : string) : Value.t option =
+  let maybe_field : field option =
+    Array.find_opt (fun ((key, _value) : field) -> key = Key field_name) raw_entry.fields
   in
   Option.map (fun (_key, value) -> value) maybe_field
 ;;
@@ -92,9 +89,7 @@ let expect_eq expected actual msg show =
 
 let show_result r = [%show: (unit, error) result] r
 
-let make_entry tag =
-  { Entry.etype = Entry.Etype "misc"; tag = Entry.Tag tag; fields = [||] }
-;;
+let make_entry tag = { etype = Etype "misc"; tag = Tag tag; fields = [||] }
 
 let test_assert_no_duplicate_entry () =
   (* empty library *)
@@ -113,40 +108,47 @@ let test_assert_no_duplicate_entry () =
     show_result;
   (* single duplication *)
   expect_eq
-    (Error (DuplicateEntry (Entry.Tag "a")))
+    (Error (DuplicateEntry (Tag "a")))
     (assert_no_duplicate_entry [| make_entry "a"; make_entry "a" |])
     "single duplication: reports duplicate tag"
     show_result;
   (* duplicate is not the only entry *)
   expect_eq
-    (Error (DuplicateEntry (Entry.Tag "b")))
+    (Error (DuplicateEntry (Tag "b")))
     (assert_no_duplicate_entry [| make_entry "a"; make_entry "b"; make_entry "b" |])
     "duplicate among others: reports duplicate tag"
     show_result;
   (* duplicate appears first *)
   expect_eq
-    (Error (DuplicateEntry (Entry.Tag "a")))
+    (Error (DuplicateEntry (Tag "a")))
     (assert_no_duplicate_entry [| make_entry "a"; make_entry "b"; make_entry "a" |])
     "duplicate appears first: reports correct tag"
     show_result
 ;;
 
-let make_entry_with_fields tag fields =
-  { Entry.etype = Entry.Etype "misc"; tag = Entry.Tag tag; fields }
+let make_entry_with_fields tag fields = { etype = Etype "misc"; tag = Tag tag; fields }
 
-let field k v = Entry.Key k, Entry.Value.String v
+let field k v = Key k, Value.String v
 
 let show_field_result r = [%show: (unit, error) result] r
-let show_value_opt r = [%show: Entry.Value.t option] r
+let show_value_opt r = [%show: Value.t option] r
 
 let test_assert_no_duplicate_field () =
   let no_fields = make_entry_with_fields "e" [||] in
-  expect_eq (Ok ()) (assert_no_duplicate_field no_fields) "no fields: ok" show_field_result;
+  expect_eq
+    (Ok ())
+    (assert_no_duplicate_field no_fields)
+    "no fields: ok"
+    show_field_result;
   let distinct = make_entry_with_fields "e" [| field "a" "1"; field "b" "2" |] in
-  expect_eq (Ok ()) (assert_no_duplicate_field distinct) "distinct fields: ok" show_field_result;
+  expect_eq
+    (Ok ())
+    (assert_no_duplicate_field distinct)
+    "distinct fields: ok"
+    show_field_result;
   let dup = make_entry_with_fields "e" [| field "a" "1"; field "a" "2" |] in
   expect_eq
-    (Error (DuplicateField (Entry.Key "a", Entry.Tag "e")))
+    (Error (DuplicateField (Key "a", Tag "e")))
     (assert_no_duplicate_field dup)
     "duplicate field: reports key and tag"
     show_field_result;
@@ -154,33 +156,33 @@ let test_assert_no_duplicate_field () =
     make_entry_with_fields "e" [| field "a" "1"; field "b" "2"; field "b" "3" |]
   in
   expect_eq
-    (Error (DuplicateField (Entry.Key "b", Entry.Tag "e")))
+    (Error (DuplicateField (Key "b", Tag "e")))
     (assert_no_duplicate_field dup_not_first)
     "duplicate not first: reports correct key"
     show_field_result
+;;
 
 let test_locate_field () =
-  let entry = make_entry_with_fields "e" [| field "author" "Doe"; field "year" "2024" |] in
+  let entry =
+    make_entry_with_fields "e" [| field "author" "Doe"; field "year" "2024" |]
+  in
   expect_eq
-    (Some (Entry.Value.String "Doe"))
+    (Some (Value.String "Doe"))
     (locate_field entry "author")
     "found: author"
     show_value_opt;
   expect_eq
-    (Some (Entry.Value.String "2024"))
+    (Some (Value.String "2024"))
     (locate_field entry "year")
     "found: year"
     show_value_opt;
-  expect_eq
-    None
-    (locate_field entry "title")
-    "not found: title"
-    show_value_opt;
+  expect_eq None (locate_field entry "title") "not found: title" show_value_opt;
   expect_eq
     None
     (locate_field (make_entry "empty") "author")
     "empty entry: not found"
     show_value_opt
+;;
 
 let run_test name f =
   f ();
@@ -191,3 +193,4 @@ let __test () =
   run_test "assert_no_duplicate_entry" test_assert_no_duplicate_entry;
   run_test "assert_no_duplicate_field" test_assert_no_duplicate_field;
   run_test "locate_field" test_locate_field
+;;
