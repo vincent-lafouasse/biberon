@@ -83,11 +83,14 @@ let unwrap_string (value : Value.t) : string =
 
 let get_string_field (entry : raw_entry) (key : key) : (string, error) result =
   let (Key key_name) = key in
+  (* locate *)
   let maybe_value : Value.t option = locate_field entry key_name in
+  (* transmute option to error for monadic chaining *)
   let value_res : (Value.t, error) result =
     (* NOTE: wait i don't know if its a core field yet hmmmm *)
     Option.to_result ~none:(MissingCoreField (key, entry.tag)) maybe_value
   in
+  (* err if value is not a string, unwrap it otherwise *)
   let unwrap_string_or_err (value : Value.t) : (string, error) result =
     if Value.kind_of value = Value.KString
     then Ok (unwrap_string value)
