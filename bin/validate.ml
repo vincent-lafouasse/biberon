@@ -259,15 +259,15 @@ let parse_doi (raw : string) : (doi, string) result =
       if String.length suffix = 0 then Error raw else Ok { prefix; suffix })
 ;;
 
-let parse_month_wrapped (month : string) (tag : tag) : (month, error) result =
+let parse_month_wrapped (tag : tag) (month : string) : (month, error) result =
   Result.map_error (fun _ -> MalformedMonth (month, tag)) (parse_month month)
 ;;
 
-let parse_doi_wrapped (doi : string) (tag : tag) : (doi, error) result =
+let parse_doi_wrapped (tag : tag) (doi : string) : (doi, error) result =
   Result.map_error (fun _ -> MalformedDoi (doi, tag)) (parse_doi doi)
 ;;
 
-let parse_page_range_wrapped (page_range : string) (tag : tag)
+let parse_page_range_wrapped (tag : tag) (page_range : string)
   : (string * string, error) result
   =
   Result.map_error
