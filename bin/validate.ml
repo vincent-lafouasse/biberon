@@ -227,6 +227,35 @@ let parse_page_range (range : string) : (string * string, string) result =
   | _ -> Error range
 ;;
 
+let parse_doi (raw : string) : (doi, string) result =
+  let strip_prefix p s =
+    if String.starts_with ~prefix:p s
+    then String.sub s (String.length p) (String.length s - String.length p)
+    else s
+  in
+  (* try and strip both the http and httpS version *)
+  let strip_suffix suf s =
+    if String.ends_with ~suffix:suf s
+    then String.sub s 0 (String.length s - String.length suf)
+    else s
+  in
+  let stripped =
+    raw
+    |> strip_prefix "https://doi.org/"
+    |> strip_prefix "http://doi.org/"
+    |> strip_suffix "/"
+  in
+  if not (String.starts_with ~prefix:"10." stripped)
+  then Error raw
+  else (
+    match String.index_opt stripped '/' with
+    | None -> Error raw
+    | Some i ->
+      let prefix = String.sub stripped 0 i in
+      let suffix = String.sub stripped (i + 1) (String.length stripped - i - 1) in
+      if String.length suffix = 0 then Error raw else Ok { prefix; suffix })
+;;
+
 (* ----------tests---------- *)
 
 let expect cond msg = if not cond then failwith ("FAIL: " ^ msg)
