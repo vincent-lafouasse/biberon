@@ -95,7 +95,7 @@ let verbatim_case (s : string) : string =
 
 let sentence_case (s : string) : string =
   apply_case
-    (fun ~is_first w -> if is_first then capitalize_word w else lowercase_word w)
+    (fun ~is_first w -> if is_first then capitalize_word w else String.lowercase_ascii w)
     (parse_segments s)
 ;;
 
@@ -129,7 +129,7 @@ let title_case (s : string) : string =
        if is_first
        then capitalize_word w
        else if List.mem (String.lowercase_ascii w) non_capitalised_in_title
-       then lowercase_word w
+       then String.lowercase_ascii w
        else capitalize_word w)
     (parse_segments s)
 ;;
@@ -237,7 +237,7 @@ let ieee_format (entry : Entry.t) : t =
   match entry with
   | Article (common, fields) -> ieee_format_article common fields
   | Inproceedings (common, fields) -> ieee_format_inproceedings common fields
-  | _ -> ieee_format_other entry
+  | Other (etype, common) -> ieee_format_other etype common
 ;;
 
 let with_style (entry : Entry.t) (style : style) : t =
