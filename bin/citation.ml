@@ -47,6 +47,80 @@ let parse_segments (s : string) : segment list =
   go 0 "" []
 ;;
 
+let capitalize_word (w : string) : string =
+  String.uppercase_ascii (String.sub w 0 1)
+  ^ String.lowercase_ascii (String.sub w 1 (String.length w - 1))
+;;
+
+let apply_case (transform : is_first:bool -> string -> string) (segments : segment list)
+  : string
+  =
+  let transform_plain is_first p =
+    let words = String.split_on_char ' ' p in
+    let words, _ =
+      List.fold_right
+        (fun w (acc, first) ->
+           if w = "" then w :: acc, first else transform ~is_first:first w :: acc, false)
+        (List.rev words)
+        ([], is_first)
+    in
+    String.concat " " words
+  in
+  let result, _ =
+    List.fold_left
+      (fun (acc, is_first) seg ->
+         match seg with
+         | Verbatim v -> acc ^ v, is_first
+         | Plain p ->
+           let has_word = List.exists (fun w -> w <> "") (String.split_on_char ' ' p) in
+           acc ^ transform_plain is_first p, is_first && not has_word)
+      ("", true)
+      segments
+  in
+  result
+;;
+
+let sentence_case (s : string) : string =
+  apply_case
+    (fun ~is_first w -> if is_first then capitalize_word w else lowercase_word w)
+    (parse_segments s)
+;;
+
+let non_capitalised_in_title =
+  [ "a"
+  ; "an"
+  ; "the"
+  ; "and"
+  ; "but"
+  ; "or"
+  ; "nor"
+  ; "for"
+  ; "so"
+  ; "yet"
+  ; "as"
+  ; "at"
+  ; "by"
+  ; "in"
+  ; "of"
+  ; "on"
+  ; "to"
+  ; "up"
+  ; "via"
+  ; "with"
+  ]
+;;
+
+let title_case (s : string) : string =
+  apply_case
+    (fun ~is_first w ->
+       if is_first
+       then capitalize_word w
+       else if List.mem (String.lowercase_ascii w) non_capitalised_in_title
+       then lowercase_word w
+       else capitalize_word w)
+    (parse_segments s)
+;;
+
 let ieee_format_author (author : Entry.author) : string =
   let initials = List.map (fun name -> String.sub name 0 1 ^ ".") author.first in
   String.concat " " initials ^ " " ^ author.last
