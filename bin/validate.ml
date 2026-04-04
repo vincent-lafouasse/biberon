@@ -531,6 +531,338 @@ let test_get_common_fields () =
     show_common_fields_result
 ;;
 
+let show_entry_result r = [%show: (Entry.tag * Entry.t, error) result] r
+
+(* build a raw_entry with an explicit etype string *)
+let make_typed_entry etype tag fields : Entry.raw_entry =
+  { etype = Entry.Etype etype; tag = Entry.Tag tag; fields }
+;;
+
+(* remove a field by key name from an array *)
+let without key arr =
+  arr |> Array.to_list |> List.filter (fun (k, _) -> k <> Entry.Key key) |> Array.of_list
+;;
+
+(* replace (or append if absent) a field in an array *)
+let with_field f arr =
+  let Entry.Key key_name, _ = f in
+  Array.append (without key_name arr) [| f |]
+;;
+
+(* shared base fixtures *)
+let base_common =
+  [| field "author" "Doe, J."
+   ; field "title" "A Great Paper"
+   ; int_field "year" 2024
+   ; field "archive" "arxiv"
+  |]
+;;
+
+let base_article_specific =
+  [| field "journal" "Nature"
+   ; int_field "volume" 42
+   ; field "pages" "1--10"
+   ; int_field "number" 3
+   ; field "month" "jan"
+   ; field "doi" "10.1000/xyz123"
+  |]
+;;
+
+let base_inproceedings_specific =
+  [| field "booktitle" "Proceedings of Stuff"
+   ; field "pages" "1--10"
+   ; field "doi" "10.1000/xyz123"
+  |]
+;;
+
+let all_article_fields = Array.append base_common base_article_specific
+let all_inproceedings_fields = Array.append base_common base_inproceedings_specific
+
+(* expected typed values *)
+let doe_common : Entry.common_fields =
+  { Entry.author = [ { Entry.last = "Doe"; first = [ "J." ] } ]
+  ; title = "A Great Paper"
+  ; year = 2024
+  ; archive = "arxiv"
+  }
+;;
+
+let nature_article : Entry.article_fields =
+  { Entry.journal = "Nature"
+  ; volume = 42
+  ; pages = "1", "10"
+  ; number = 3
+  ; month = Entry.Jan
+  ; doi = { Entry.prefix = "10.1000"; suffix = "xyz123" }
+  }
+;;
+
+let stuff_inproceedings : Entry.inproceedings_fields =
+  { Entry.booktitle = "Proceedings of Stuff"
+  ; pages = "1", "10"
+  ; doi = { Entry.prefix = "10.1000"; suffix = "xyz123" }
+  }
+;;
+
+let test_validate_entry_article () =
+  (* happy path *)
+  expect_eq
+    (Ok (Entry.Tag "test", Entry.Article (doe_common, nature_article)))
+    (validate_entry (make_typed_entry "article" "test" all_article_fields))
+    "article: happy path"
+    show_entry_result;
+  (* case insensitive *)
+  expect_eq
+    (Ok (Entry.Tag "test", Entry.Article (doe_common, nature_article)))
+    (validate_entry (make_typed_entry "Article" "test" all_article_fields))
+    "article: case insensitive etype"
+    show_entry_result;
+  expect_eq
+    (Ok (Entry.Tag "test", Entry.Article (doe_common, nature_article)))
+    (validate_entry (make_typed_entry "ARTICLE" "test" all_article_fields))
+    "article: all-caps etype"
+    show_entry_result;
+  (* missing journal *)
+  expect_eq
+    (Error (MissingField (Entry.Key "journal", Entry.Tag "test")))
+    (validate_entry
+       (make_typed_entry "article" "test" (without "journal" all_article_fields)))
+    "article: missing journal"
+    show_entry_result;
+  (* missing volume *)
+  expect_eq
+    (Error (MissingField (Entry.Key "volume", Entry.Tag "test")))
+    (validate_entry
+       (make_typed_entry "article" "test" (without "volume" all_article_fields)))
+    "article: missing volume"
+    show_entry_result;
+  (* volume wrong type *)
+  expect_eq
+    (Error
+       (ValueTypeMismatch
+          ( Entry.Key "volume"
+          , Entry.Tag "test"
+          , Expected Entry.Value.KInteger
+          , Actual Entry.Value.KString )))
+    (validate_entry
+       (make_typed_entry
+          "article"
+          "test"
+          (with_field (field "volume" "forty-two") all_article_fields)))
+    "article: volume wrong type"
+    show_entry_result;
+  (* missing pages *)
+  expect_eq
+    (Error (MissingField (Entry.Key "pages", Entry.Tag "test")))
+    (validate_entry
+       (make_typed_entry "article" "test" (without "pages" all_article_fields)))
+    "article: missing pages"
+    show_entry_result;
+  (* malformed pages — single dash instead of double *)
+  expect_eq
+    (Error (MalformedPageRange ("1-10", Entry.Tag "test")))
+    (validate_entry
+       (make_typed_entry
+          "article"
+          "test"
+          (with_field (field "pages" "1-10") all_article_fields)))
+    "article: malformed page range"
+    show_entry_result;
+  (* missing month *)
+  expect_eq
+    (Error (MissingField (Entry.Key "month", Entry.Tag "test")))
+    (validate_entry
+       (make_typed_entry "article" "test" (without "month" all_article_fields)))
+    "article: missing month"
+    show_entry_result;
+  (* malformed month — full name not accepted *)
+  expect_eq
+    (Error (MalformedMonth ("january", Entry.Tag "test")))
+    (validate_entry
+       (make_typed_entry
+          "article"
+          "test"
+          (with_field (field "month" "january") all_article_fields)))
+    "article: malformed month"
+    show_entry_result;
+  (* missing doi *)
+  expect_eq
+    (Error (MissingField (Entry.Key "doi", Entry.Tag "test")))
+    (validate_entry
+       (make_typed_entry "article" "test" (without "doi" all_article_fields)))
+    "article: missing doi"
+    show_entry_result;
+  (* malformed doi — no 10. prefix *)
+  expect_eq
+    (Error (MalformedDoi ("not-a-doi", Entry.Tag "test")))
+    (validate_entry
+       (make_typed_entry
+          "article"
+          "test"
+          (with_field (field "doi" "not-a-doi") all_article_fields)))
+    "article: malformed doi"
+    show_entry_result;
+  (* doi in http form *)
+  expect_eq
+    (Ok
+       ( Entry.Tag "test"
+       , Entry.Article
+           ( doe_common
+           , { nature_article with doi = { Entry.prefix = "10.1000"; suffix = "xyz123" } }
+           ) ))
+    (validate_entry
+       (make_typed_entry
+          "article"
+          "test"
+          (with_field (field "doi" "https://doi.org/10.1000/xyz123") all_article_fields)))
+    "article: doi in https form"
+    show_entry_result
+;;
+
+let test_validate_entry_inproceedings () =
+  (* happy path *)
+  expect_eq
+    (Ok (Entry.Tag "test", Entry.Inproceedings (doe_common, stuff_inproceedings)))
+    (validate_entry (make_typed_entry "inproceedings" "test" all_inproceedings_fields))
+    "inproceedings: happy path"
+    show_entry_result;
+  (* case insensitive *)
+  expect_eq
+    (Ok (Entry.Tag "test", Entry.Inproceedings (doe_common, stuff_inproceedings)))
+    (validate_entry (make_typed_entry "InProceedings" "test" all_inproceedings_fields))
+    "inproceedings: case insensitive etype"
+    show_entry_result;
+  (* missing booktitle *)
+  expect_eq
+    (Error (MissingField (Entry.Key "booktitle", Entry.Tag "test")))
+    (validate_entry
+       (make_typed_entry
+          "inproceedings"
+          "test"
+          (without "booktitle" all_inproceedings_fields)))
+    "inproceedings: missing booktitle"
+    show_entry_result;
+  (* missing pages *)
+  expect_eq
+    (Error (MissingField (Entry.Key "pages", Entry.Tag "test")))
+    (validate_entry
+       (make_typed_entry
+          "inproceedings"
+          "test"
+          (without "pages" all_inproceedings_fields)))
+    "inproceedings: missing pages"
+    show_entry_result;
+  (* malformed pages *)
+  expect_eq
+    (Error (MalformedPageRange ("1-10", Entry.Tag "test")))
+    (validate_entry
+       (make_typed_entry
+          "inproceedings"
+          "test"
+          (with_field (field "pages" "1-10") all_inproceedings_fields)))
+    "inproceedings: malformed page range"
+    show_entry_result;
+  (* missing doi *)
+  expect_eq
+    (Error (MissingField (Entry.Key "doi", Entry.Tag "test")))
+    (validate_entry
+       (make_typed_entry "inproceedings" "test" (without "doi" all_inproceedings_fields)))
+    "inproceedings: missing doi"
+    show_entry_result;
+  (* malformed doi *)
+  expect_eq
+    (Error (MalformedDoi ("bad", Entry.Tag "test")))
+    (validate_entry
+       (make_typed_entry
+          "inproceedings"
+          "test"
+          (with_field (field "doi" "bad") all_inproceedings_fields)))
+    "inproceedings: malformed doi"
+    show_entry_result
+;;
+
+let test_validate_entry_other () =
+  (* unknown etype succeeds with only common fields *)
+  expect_eq
+    (Ok (Entry.Tag "test", Entry.Other (Entry.Etype "misc", doe_common)))
+    (validate_entry (make_typed_entry "misc" "test" base_common))
+    "other: happy path"
+    show_entry_result;
+  (* other does not require article-specific fields *)
+  expect_eq
+    (Ok (Entry.Tag "test", Entry.Other (Entry.Etype "techreport", doe_common)))
+    (validate_entry (make_typed_entry "techreport" "test" base_common))
+    "other: techreport needs no specific fields"
+    show_entry_result;
+  (* etype preserved as-is in Other *)
+  expect_eq
+    (Ok (Entry.Tag "test", Entry.Other (Entry.Etype "MyCustomType", doe_common)))
+    (validate_entry (make_typed_entry "MyCustomType" "test" base_common))
+    "other: etype string preserved"
+    show_entry_result;
+  (* common field errors still apply to other *)
+  expect_eq
+    (Error (MissingField (Entry.Key "title", Entry.Tag "test")))
+    (validate_entry (make_typed_entry "misc" "test" (without "title" base_common)))
+    "other: missing common field still errors"
+    show_entry_result
+;;
+
+let test_validate_entry_common_errors () =
+  (* test common field errors via article so etype resolution is not the confounder *)
+  expect_eq
+    (Error (MissingField (Entry.Key "author", Entry.Tag "test")))
+    (validate_entry
+       (make_typed_entry "article" "test" (without "author" all_article_fields)))
+    "common: missing author"
+    show_entry_result;
+  expect_eq
+    (Error (MissingField (Entry.Key "title", Entry.Tag "test")))
+    (validate_entry
+       (make_typed_entry "article" "test" (without "title" all_article_fields)))
+    "common: missing title"
+    show_entry_result;
+  expect_eq
+    (Error (MissingField (Entry.Key "year", Entry.Tag "test")))
+    (validate_entry
+       (make_typed_entry "article" "test" (without "year" all_article_fields)))
+    "common: missing year"
+    show_entry_result;
+  expect_eq
+    (Error
+       (ValueTypeMismatch
+          ( Entry.Key "year"
+          , Entry.Tag "test"
+          , Expected Entry.Value.KInteger
+          , Actual Entry.Value.KString )))
+    (validate_entry
+       (make_typed_entry
+          "article"
+          "test"
+          (with_field (field "year" "not-a-year") all_article_fields)))
+    "common: year wrong type"
+    show_entry_result;
+  expect_eq
+    (Error (MalformedAuthorName ("John Smith", Entry.Tag "test")))
+    (validate_entry
+       (make_typed_entry
+          "article"
+          "test"
+          (with_field (field "author" "John Smith") all_article_fields)))
+    "common: malformed author"
+    show_entry_result;
+  (* common errors take precedence over specific field errors *)
+  expect_eq
+    (Error (MissingField (Entry.Key "author", Entry.Tag "test")))
+    (validate_entry
+       (make_typed_entry
+          "article"
+          "test"
+          (without "author" (without "journal" all_article_fields))))
+    "common: common error reported before specific field error"
+    show_entry_result
+;;
+
 let run_test name f =
   f ();
   print_endline (name ^ " ok")
@@ -541,5 +873,9 @@ let __test () =
   run_test "assert_no_duplicate_field" test_assert_no_duplicate_field;
   run_test "locate_field" test_locate_field;
   run_test "parse_author_list" test_parse_author_list;
-  run_test "get_common_fields" test_get_common_fields
+  run_test "get_common_fields" test_get_common_fields;
+  run_test "validate_entry/article" test_validate_entry_article;
+  run_test "validate_entry/inproceedings" test_validate_entry_inproceedings;
+  run_test "validate_entry/other" test_validate_entry_other;
+  run_test "validate_entry/common errors" test_validate_entry_common_errors
 ;;
