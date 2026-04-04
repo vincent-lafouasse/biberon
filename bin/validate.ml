@@ -9,6 +9,9 @@ type error =
   | ValueTypeMismatch of key * tag * Value.kind expected * Value.kind actual
   | MissingField of key * tag
   | MalformedAuthorName of string * tag
+  | MalformedDoi of string * tag
+  | MalformedMonth of string * tag
+  | MalformedPageRange of string * tag
 [@@deriving show]
 
 module StringMap = Map.Make (String)
@@ -254,6 +257,22 @@ let parse_doi (raw : string) : (doi, string) result =
       let prefix = String.sub stripped 0 i in
       let suffix = String.sub stripped (i + 1) (String.length stripped - i - 1) in
       if String.length suffix = 0 then Error raw else Ok { prefix; suffix })
+;;
+
+let parse_month_wrapped (month : string) (tag : tag) : (month, error) result =
+  Result.map_error (fun _ -> MalformedMonth (month, tag)) (parse_month month)
+;;
+
+let parse_doi_wrapped (doi : string) (tag : tag) : (doi, error) result =
+  Result.map_error (fun _ -> MalformedDoi (doi, tag)) (parse_doi doi)
+;;
+
+let parse_page_range_wrapped (page_range : string) (tag : tag)
+  : (string * string, error) result
+  =
+  Result.map_error
+    (fun _ -> MalformedPageRange (page_range, tag))
+    (parse_page_range page_range)
 ;;
 
 (* ----------tests---------- *)
