@@ -1,3 +1,6 @@
+type style = IEEE
+type target = Markdown
+
 type modifier =
   | Normal
   | Bold
