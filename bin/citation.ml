@@ -182,6 +182,8 @@ let ieee_format_inproceedings
   ; italic (title_case fields.booktitle)
   ; txt (Printf.sprintf ", %d, pp. %s--%s, doi: " common.year start_page end_page)
   ; ieee_format_doi fields.doi
+  ; txt ", "
+  ; Link { display = "Archive"; url = common.archive }
   ; txt "."
   ]
 ;;
@@ -202,6 +204,8 @@ let ieee_format_article (common : Entry.common_fields) (fields : Entry.article_f
          (ieee_format_month fields.month)
          common.year)
   ; ieee_format_doi fields.doi
+  ; txt ", "
+  ; Link { display = "Archive"; url = common.archive }
   ; txt "."
   ]
 ;;
