@@ -159,50 +159,22 @@ let parse_author_list (author_list_str : string) : (author list, string) result 
   | None -> Ok (List.map Result.get_ok author_res_list)
 ;;
 
+let parse_author_list_wrapped (tag : tag) (author_list_str : string)
+  : (author list, error) result
+  =
+  Result.map_error
+    (fun bad_name -> MalformedAuthorName (bad_name, tag))
+    (parse_author_list author_list_str)
+;;
+
 let get_common_fields (entry : raw_entry) : (common_fields, error) result =
-  let author_key = Key "author" in
-  let title_key = Key "title" in
-  let year_key = Key "year" in
-  let archive_key = Key "archive" in
-  (* try and gather all of them *)
-  let author_str_res = get_string_field entry author_key in
-  let title_res = get_string_field entry title_key in
-  let archive_res = get_string_field entry archive_key in
-  let year_res = get_int_field entry year_key in
-  (* check if any err'd. if so return any of them. all fields are mandatory so
-     any missing field is fatal. not very ergnonomic for users but should be
-     fine for now*)
-  let maybe_err : error option =
-    match author_str_res with
-    | Error e -> Some e
-    | _ ->
-      (match title_res with
-       | Error e -> Some e
-       | _ ->
-         (match archive_res with
-          | Error e -> Some e
-          | _ ->
-            (match year_res with
-             | Error e -> Some e
-             | _ -> None)))
-  in
-  let parse_author_list_wrapped (author_list_str : string) : (author list, error) result =
-    match parse_author_list author_list_str with
-    | Ok author_list -> Ok author_list
-    | Error bad_name -> Error (MalformedAuthorName (bad_name, entry.tag))
-  in
-  let author_res = Result.bind author_str_res parse_author_list_wrapped in
-  match author_res with
-  | Error err -> Error err
-  | Ok author_list ->
-    (match maybe_err with
-     | Some error -> Error error
-     | None ->
-       (* if we reached this point, everything should be safe to unwrap *)
-       let title = Result.get_ok title_res in
-       let year = Result.get_ok year_res in
-       let archive = Result.get_ok archive_res in
-       Ok { author = author_list; title; year; archive })
+  let ( let* ) = Result.bind in
+  let* author_str = get_string_field entry (Key "author") in
+  let* author = parse_author_list_wrapped entry.tag author_str in
+  let* title = get_string_field entry (Key "title") in
+  let* year = get_int_field entry (Key "year") in
+  let* archive = get_string_field entry (Key "archive") in
+  Ok { author; title; year; archive }
 ;;
 
 (* same as with the authors, error payload is the fautive string. wrapping at
