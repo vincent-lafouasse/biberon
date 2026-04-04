@@ -236,3 +236,8 @@ let ieee_format (entry : Entry.t) : t =
   | Inproceedings (common, fields) -> ieee_format_inproceedings common fields
   | _ -> ieee_format_other entry
 ;;
+
+let with_style (entry : Entry.t) (style : style) : t =
+  match style with
+  | IEEE -> ieee_format entry
+;;
