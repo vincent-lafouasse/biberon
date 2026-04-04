@@ -26,14 +26,14 @@ authors are listed as initials followed by last name, separated by commas, with 
 
 the general shape of an article citation is:
 
-A. Author, "Title of the paper," *Journal Name*, vol. X, no. Y, pp. start--end, Mon. YYYY, doi: 10.XXXX/YYYY.
+A. Author, "Title of the paper", *Journal Name*, vol. X, no. Y, pp. start--end, Mon. YYYY, doi: 10.XXXX/YYYY.
 
 and for inproceedings:
 
-A. Author, "Title of the paper," in *Proceedings of the Conference*, Location, YYYY, pp. start--end, doi: 10.XXXX/YYYY.
+A. Author, "Title of the paper", in *Proceedings of the Conference*, Location, YYYY, pp. start--end, doi: 10.XXXX/YYYY.
 
 details:
-- article/paper titles are in sentence case and wrapped in double quotes
+- article/paper titles are in sentence case and wrapped in double quotes, comma outside the closing quote
 - journal and conference names are in title case and italicised
 - inproceedings use `in` before the conference name
 - volume as `vol. X`, issue/number as `no. Y`, pages as `pp. start--end`
