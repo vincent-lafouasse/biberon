@@ -229,3 +229,10 @@ let ieee_format_article (common : Entry.common_fields) (fields : Entry.article_f
   ; txt "."
   ]
 ;;
+
+let ieee_format (entry : Entry.t) : t =
+  match entry with
+  | Article (common, fields) -> ieee_format_article common fields
+  | Inproceedings (common, fields) -> ieee_format_inproceedings common fields
+  | _ -> ieee_format_other entry
+;;
