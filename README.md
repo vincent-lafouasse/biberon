@@ -20,6 +20,27 @@ in a loosely compliant IEEE style. i'm not interested in being legally compliant
 
 styles i'm considering post 1.0 are ACS (chemistry nostalgia), ACM (if ocaml lights a spark in me), AIP/APS (for physics, maybe even ASA). maybe even APA, MLA, Nature if i want to cover common mainstream styles as well.
 
+### IEEE format
+
+authors are listed as initials followed by last name, separated by commas, with "and" before the last: `J. Doe, A. Smith, and B. Jones`. for seven or more authors, the first is listed followed by `et al.`
+
+the general shape of an article citation is:
+
+A. Author, "Title of the paper," *Journal Name*, vol. X, no. Y, pp. start--end, Mon. YYYY, doi: 10.XXXX/YYYY.
+
+and for inproceedings:
+
+A. Author, "Title of the paper," in *Proceedings of the Conference*, Location, YYYY, pp. start--end, doi: 10.XXXX/YYYY.
+
+details:
+- article/paper titles are in sentence case and wrapped in double quotes
+- journal and conference names are in title case and italicised
+- inproceedings use `in` before the conference name
+- volume as `vol. X`, issue/number as `no. Y`, pages as `pp. start--end`
+- month is abbreviated to three letters: Jan., Feb., Mar., etc.
+- DOI formatted as `doi: 10.XXXX/YYYY` at the end
+- entries end with a period
+
 ## ideas for later
 
 - maybe allow some `@mapping` entries for text substitution, because no-one wants to write "IEEE International Conference on Acoustics, Speech and Signal Processing" five times in a row
