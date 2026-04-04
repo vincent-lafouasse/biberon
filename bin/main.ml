@@ -10,11 +10,11 @@ let lamport1983 =
 @article{Lamport1983,
 	author     = "Lamport, Leslie",
 	title      = "Specifying Concurrent Program Modules",
-	year       = "1983",
+	year       = 1983,
 
 	journal    = "ACM Trans. Program. Lang. Syst.",
-	volume     = "5",
-	number     = "2",
+	volume     = 5,
+	number     = 2,
 	pages      = "190--222",
 	month      = "apr",
 
