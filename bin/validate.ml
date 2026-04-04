@@ -183,7 +183,20 @@ let get_common_fields (entry : raw_entry) : (common_fields, error) result =
              | Error e -> Some e
              | _ -> None)))
   in
-  failwith "todo"
+  let parse_author_list_wrapped (author_list_str : string) : (author list, error) result =
+    match parse_author_list author_list_str with
+    | Ok author_list -> Ok author_list
+    | Error bad_name -> Error (MalformedAuthorName (bad_name, entry.tag))
+  in
+  let author_res = Result.bind author_str_res parse_author_list_wrapped in
+  match author_res with
+  | Error err -> Error err
+  | Ok author_list ->
+    (* if we reached this point, everything should be safe to unwrap *)
+    let title = Result.get_ok title_res in
+    let year = Result.get_ok year_res in
+    let archive = Result.get_ok archive_res in
+    Ok { author = author_list; title; year; archive }
 ;;
 
 (* ----------tests---------- *)
