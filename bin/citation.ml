@@ -3,6 +3,7 @@ type modifier =
   | Bold
   | Italic
   | SmallCaps
+[@@deriving show]
 
 type blob =
   | Text of
@@ -13,12 +14,14 @@ type blob =
       { display : string
       ; url : string
       }
+[@@deriving show]
 
-type t = blob list
+type t = blob list [@@deriving show]
 
 type segment =
   | Plain of string
   | Verbatim of string
+[@@deriving show]
 
 let parse_segments (s : string) : segment list =
   let n = String.length s in
