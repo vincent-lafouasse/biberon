@@ -80,6 +80,16 @@ let apply_case (transform : is_first:bool -> string -> string) (segments : segme
   result
 ;;
 
+let verbatim_case (s : string) : string =
+  apply_case
+    (fun ~is_first w ->
+       if is_first
+       then
+         String.uppercase_ascii (String.sub w 0 1) ^ String.sub w 1 (String.length w - 1)
+       else w)
+    (parse_segments s)
+;;
+
 let sentence_case (s : string) : string =
   apply_case
     (fun ~is_first w -> if is_first then capitalize_word w else lowercase_word w)
