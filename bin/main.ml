@@ -37,6 +37,8 @@ let () =
   let lib = Result.get_ok lib in
   let raw_entry = Array.get lib 0 in
   let validation_res = Validate.validate_entry raw_entry in
-  let show_res = [%show: (Entry.tag * Entry.t, Validate.error) result] in
-  print_endline (show_res validation_res)
+  let entry = Result.get_ok validation_res in
+  let citation = Citation.with_style entry Citation.IEEE in
+  let formatted_citation = Citation.format citation Citation.Markdown in
+  print_endline formatted_citation
 ;;
