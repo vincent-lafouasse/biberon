@@ -127,9 +127,9 @@ let get_int_field (entry : raw_entry) (key : key) : (int, error) result =
 
 (* error payload is its own raw input, this way i can keep track of which
    author is malformed. the error will be wrapped in a Validate.error at the
-   call site*)
+   call site *)
 (* returning `MalformedAuthorName of string * tag` means we have to be in a
-   scope where we know the entry tag*)
+   scope where we know the entry tag *)
 let parse_single_author author_str : (author, string) result =
   let last_first : string list = Str.split (Str.regexp ",") author_str in
   let last_first : (string * string, string) result =
