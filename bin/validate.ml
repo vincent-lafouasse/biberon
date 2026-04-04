@@ -11,6 +11,7 @@ type error =
   | MalformedDoi of string * Entry.tag
   | MalformedMonth of string * Entry.tag
   | MalformedPageRange of string * Entry.tag
+  | MalformedBraces of Entry.key * Entry.tag
 [@@deriving show]
 
 module StringMap = Map.Make (String)
@@ -111,6 +112,30 @@ let get_string_field (entry : Entry.raw_entry) (key : Entry.key) : (string, erro
   Result.bind value_res unwrap_string_or_err
 ;;
 
+(* braces are allowed in text fields for capitalisation hints e.g. {OCaml}.
+   nesting is forbidden, and every opened brace must be closed.
+   \{ and \} are treated as escaped literals and ignored. *)
+let validate_braces (s : string) : bool =
+  let n = String.length s in
+  let rec go i depth =
+    if i >= n
+    then depth = 0
+    else (
+      match s.[i] with
+      | '\\' -> go (i + 2) depth
+      | '{' -> if depth > 0 then false else go (i + 1) 1
+      | '}' -> if depth = 0 then false else go (i + 1) 0
+      | _ -> go (i + 1) depth)
+  in
+  go 0 0
+;;
+
+let get_text_field (entry : Entry.raw_entry) (key : Entry.key) : (string, error) result =
+  let ( let* ) = Result.bind in
+  let* s = get_string_field entry key in
+  if validate_braces s then Ok s else Error (MalformedBraces (key, entry.tag))
+;;
+
 let get_int_field (entry : Entry.raw_entry) (key : Entry.key) : (int, error) result =
   let (Entry.Key key_name) = key in
   let maybe_value : Entry.Value.t option = locate_field entry key_name in
@@ -171,7 +196,7 @@ let get_common_fields (entry : Entry.raw_entry) : (Entry.common_fields, error) r
   let ( let* ) = Result.bind in
   let* author_str = get_string_field entry (Entry.Key "author") in
   let* author = parse_author_list_wrapped entry.tag author_str in
-  let* title = get_string_field entry (Entry.Key "title") in
+  let* title = get_text_field entry (Entry.Key "title") in
   let* year = get_int_field entry (Entry.Key "year") in
   let* archive = get_string_field entry (Entry.Key "archive") in
   Ok { Entry.author; title; year; archive }
@@ -250,7 +275,7 @@ let get_inproceedings_fields (entry : Entry.raw_entry)
   : (Entry.inproceedings_fields, error) result
   =
   let ( let* ) = Result.bind in
-  let* booktitle = get_string_field entry (Entry.Key "booktitle") in
+  let* booktitle = get_text_field entry (Entry.Key "booktitle") in
   let* pages_str = get_string_field entry (Entry.Key "pages") in
   let* pages = parse_page_range_wrapped entry.tag pages_str in
   let* doi_str = get_string_field entry (Entry.Key "doi") in
@@ -260,7 +285,7 @@ let get_inproceedings_fields (entry : Entry.raw_entry)
 
 let get_article_fields (entry : Entry.raw_entry) : (Entry.article_fields, error) result =
   let ( let* ) = Result.bind in
-  let* journal = get_string_field entry (Entry.Key "journal") in
+  let* journal = get_text_field entry (Entry.Key "journal") in
   let* volume = get_int_field entry (Entry.Key "volume") in
   let* pages_str = get_string_field entry (Entry.Key "pages") in
   let* pages = parse_page_range_wrapped entry.tag pages_str in
