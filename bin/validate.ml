@@ -233,12 +233,12 @@ let parse_doi (raw : string) : (doi, string) result =
     then String.sub s (String.length p) (String.length s - String.length p)
     else s
   in
-  (* try and strip both the http and httpS version *)
   let strip_suffix suf s =
     if String.ends_with ~suffix:suf s
     then String.sub s 0 (String.length s - String.length suf)
     else s
   in
+  (* try and strip both the http and httpS version *)
   let stripped =
     raw
     |> strip_prefix "https://doi.org/"
