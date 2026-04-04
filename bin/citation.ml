@@ -244,3 +244,21 @@ let with_style (entry : Entry.t) (style : style) : t =
   match style with
   | IEEE -> ieee_format entry
 ;;
+
+let markdown_formatter (blob : blob) : string =
+  match blob with
+  | Text { text; modifier = Normal } -> text
+  | Text { text; modifier = Bold } -> "**" ^ text ^ "**"
+  | Text { text; modifier = Italic } -> "*" ^ text ^ "*"
+  | Text { text; modifier = SmallCaps } -> text
+  | Link { display; url } -> "[" ^ display ^ "](" ^ url ^ ")"
+;;
+
+let apply_formatter (formatter : blob -> string) (citation : t) : string =
+  String.concat "" (List.map formatter citation)
+;;
+
+let format (citation : t) (target : target) : string =
+  match target with
+  | Markdown -> apply_formatter markdown_formatter citation
+;;
