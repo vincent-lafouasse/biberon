@@ -12,7 +12,7 @@ let lamport1983 =
 	title      = "Specifying Concurrent Program Modules",
 	year       = 1983,
 
-	journal    = "ACM Trans. Program. Lang. Syst.",
+	journal    = "{ACM} Trans. Program. Lang. Syst.",
 	volume     = 5,
 	number     = 2,
 	pages      = "190--222",
