@@ -131,19 +131,19 @@ let get_int_field (entry : raw_entry) (key : key) : (int, error) result =
 (* returning `MalformedAuthorName of string * tag` means we have to be in a
    scope where we know the entry tag*)
 let parse_single_author author_str : (author, string) result =
-  let parts : string list = Str.split (Str.regexp ",") author_str in
-  let parts : (string * string, string) result =
-    match parts with
+  let last_first : string list = Str.split (Str.regexp ",") author_str in
+  let last_first : (string * string, string) result =
+    match last_first with
     | [ last; first ] -> Ok (String.trim last, String.trim first)
     | _ -> Error (String.trim author_str)
   in
-  let split_first_names (parts : string * string) : author =
-    let last, first = parts in
+  let split_first_names (last_first : string * string) : author =
+    let last, first = last_first in
     let first : string list = Str.split (Str.regexp " ") first in
     let first : string list = List.map String.trim first in
     { last; first }
   in
-  Result.map split_first_names parts
+  Result.map split_first_names last_first
 ;;
 
 let parse_author_list (author_list_str : string) : (author list, string) result =
