@@ -5,35 +5,38 @@ let die msg =
   exit 1
 ;;
 
-let tiny_bib =
+let lamport1983 =
   {|
-@misc {an_entry,
-	a = "A",
-	b = 67,
-	c = true,
+@article{Lamport1983,
+	author     = "Lamport, Leslie",
+	title      = "Specifying Concurrent Program Modules",
+	year       = "1983",
+
+	journal    = "ACM Trans. Program. Lang. Syst.",
+	volume     = "5",
+	number     = "2",
+	pages      = "190--222",
+	month      = "apr",
+
+	issue_date = "April 1983",
+	publisher  = "Association for Computing Machinery",
+	address    = "New York, NY, USA",
+	issn       = "0164-0925",
+	numpages   = "33",
+
+	doi        = "10.1145/69624.357207",
+	archive    = "https://lamport.azurewebsites.net/pubs/spec.pdf",
+	note       = "foundational proof of correctness of SPSC queues",
 }
 |}
 ;;
 
-let print_tokens tokens =
-  Array.iter
-    (fun (tok, pos) -> Printf.printf "%s @ %s\n" (Token.show tok) (Position.show pos))
-    tokens
-;;
-
-let print_entries =
-  Array.iter (fun entry -> Printf.printf "%s\n" (Entry.show_raw_entry entry))
-;;
-
-let () = Lexer.__test ()
-let () = Parser.__test ()
-let () = Validate.__test ()
-
 let () =
-  let () = Printf.printf "%s\n" tiny_bib in
-  let maybe_entries = Parser.parse tiny_bib in
-  match maybe_entries with
-  | Error (err, loc) ->
-    die (Printf.sprintf "error at %s: %s" (Position.show loc) (Parser.show_error err))
-  | Ok entries -> print_entries entries
+  let () = Printf.printf "%s\n" lamport1983 in
+  let lib = Parser.parse lamport1983 in
+  let lib = Result.get_ok lib in
+  let raw_entry = Array.get lib 0 in
+  let validation_res = Validate.validate_entry raw_entry in
+  let show_res = [%show: (Entry.tag * Entry.t, error) result] in
+  print_endline (show_res validation_res)
 ;;
