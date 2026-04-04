@@ -273,8 +273,20 @@ let get_article_fields (entry : Entry.raw_entry) : (Entry.article_fields, error)
 ;;
 
 let validate_entry (entry : Entry.raw_entry) : (Entry.tag * Entry.t, error) result =
-  let _ = entry in
-  failwith "todo"
+  let ( let* ) = Result.bind in
+  let* common = get_common_fields entry in
+  let (Entry.Etype etype_str) = entry.etype in
+  let* typed =
+    match String.lowercase_ascii etype_str with
+    | "article" ->
+      let* fields = get_article_fields entry in
+      Ok (Entry.Article (common, fields))
+    | "inproceedings" ->
+      let* fields = get_inproceedings_fields entry in
+      Ok (Entry.Inproceedings (common, fields))
+    | _ -> Ok (Entry.Other (entry.etype, common))
+  in
+  Ok (entry.tag, typed)
 ;;
 
 (* ----------tests---------- *)
