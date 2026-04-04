@@ -169,7 +169,7 @@ let get_common_fields (entry : raw_entry) : (common_fields, error) result =
   (* check if any err'd. if so return any of them. all fields are mandatory so
      any missing field is fatal. not very ergnonomic for users but should be
      fine for now*)
-  let _maybe_err : error option =
+  let maybe_err : error option =
     match author_str_res with
     | Error e -> Some e
     | _ ->
@@ -192,11 +192,14 @@ let get_common_fields (entry : raw_entry) : (common_fields, error) result =
   match author_res with
   | Error err -> Error err
   | Ok author_list ->
-    (* if we reached this point, everything should be safe to unwrap *)
-    let title = Result.get_ok title_res in
-    let year = Result.get_ok year_res in
-    let archive = Result.get_ok archive_res in
-    Ok { author = author_list; title; year; archive }
+    (match maybe_err with
+     | Some error -> Error error
+     | None ->
+       (* if we reached this point, everything should be safe to unwrap *)
+       let title = Result.get_ok title_res in
+       let year = Result.get_ok year_res in
+       let archive = Result.get_ok archive_res in
+       Ok { author = author_list; title; year; archive })
 ;;
 
 (* ----------tests---------- *)
