@@ -257,6 +257,20 @@ let get_inproceedings_fields (entry : raw_entry) : (inproceedings_fields, error)
   Ok { booktitle; pages; doi }
 ;;
 
+let get_article_fields (entry : raw_entry) : (article_fields, error) result =
+  let ( let* ) = Result.bind in
+  let* journal = get_string_field entry (Key "journal") in
+  let* volume = get_int_field entry (Key "volume") in
+  let* pages_str = get_string_field entry (Key "pages") in
+  let* pages = parse_page_range_wrapped entry.tag pages_str in
+  let* number = get_int_field entry (Key "number") in
+  let* month_str = get_string_field entry (Key "month") in
+  let* month = parse_month_wrapped entry.tag month_str in
+  let* doi_str = get_string_field entry (Key "doi") in
+  let* doi = parse_doi_wrapped entry.tag doi_str in
+  Ok { journal; volume; pages; number; month; doi }
+;;
+
 (* ----------tests---------- *)
 
 let expect cond msg = if not cond then failwith ("FAIL: " ^ msg)
