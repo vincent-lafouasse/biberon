@@ -278,10 +278,10 @@ let validate_library (raw_lib : Entry.raw_entry array) : (Entry.library, error) 
   let* reversed =
     Array.fold_left
       (fun acc entry ->
-        let* lst = acc in
-        let* () = assert_no_duplicate_field entry in
-        let* validated = validate_entry entry in
-        Ok (validated :: lst))
+         let* lst = acc in
+         let* () = assert_no_duplicate_field entry in
+         let* validated = validate_entry entry in
+         Ok (validated :: lst))
       (Ok [])
       raw_lib
   in
