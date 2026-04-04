@@ -5,9 +5,14 @@ type modifier =
   | SmallCaps
 
 type blob =
-  { text : string
-  ; modifier : modifier
-  }
+  | Text of
+      { text : string
+      ; modifier : modifier
+      }
+  | Link of
+      { display : string
+      ; url : string
+      }
 
 type t = blob list
 
@@ -34,5 +39,5 @@ let ieee_format_author_list (author_list : Entry.author list) : blob =
          let last = List.nth formatted (List.length formatted - 1) in
          String.concat ", " all_but_last ^ ", and " ^ last)
   in
-  { text; modifier = Normal }
+  Text { text; modifier = Normal }
 ;;
