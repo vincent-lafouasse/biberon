@@ -171,6 +171,21 @@ let ieee_format_author_list (author_list : Entry.author list) : blob =
   Text { text; modifier = Normal }
 ;;
 
+let ieee_format_inproceedings
+      (common : Entry.common_fields)
+      (fields : Entry.inproceedings_fields)
+  : t
+  =
+  let start_page, end_page = fields.pages in
+  [ ieee_format_author_list common.author
+  ; txt (Printf.sprintf ", \"%s\", in " (sentence_case common.title))
+  ; italic (title_case fields.booktitle)
+  ; txt (Printf.sprintf ", %d, pp. %s--%s, doi: " common.year start_page end_page)
+  ; ieee_format_doi fields.doi
+  ; txt "."
+  ]
+;;
+
 let ieee_format_article (common : Entry.common_fields) (fields : Entry.article_fields) : t
   =
   let start_page, end_page = fields.pages in
