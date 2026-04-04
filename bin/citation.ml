@@ -126,6 +126,30 @@ let ieee_format_author (author : Entry.author) : string =
   String.concat " " initials ^ " " ^ author.last
 ;;
 
+let txt s = Text { text = s; modifier = Normal }
+let italic s = Text { text = s; modifier = Italic }
+
+let ieee_format_month (m : Entry.month) : string =
+  match m with
+  | Entry.Jan -> "Jan."
+  | Entry.Feb -> "Feb."
+  | Entry.Mar -> "Mar."
+  | Entry.Apr -> "Apr."
+  | Entry.May -> "May"
+  | Entry.Jun -> "Jun."
+  | Entry.Jul -> "Jul."
+  | Entry.Aug -> "Aug."
+  | Entry.Sep -> "Sep."
+  | Entry.Oct -> "Oct."
+  | Entry.Nov -> "Nov."
+  | Entry.Dec -> "Dec."
+;;
+
+let ieee_format_doi (doi : Entry.doi) : blob =
+  let display = doi.prefix ^ "/" ^ doi.suffix in
+  Link { display; url = "https://doi.org/" ^ display }
+;;
+
 let ieee_format_author_list (author_list : Entry.author list) : blob =
   let text =
     match author_list with
