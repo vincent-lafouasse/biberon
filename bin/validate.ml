@@ -275,6 +275,40 @@ let parse_page_range_wrapped (tag : tag) (page_range : string)
     (parse_page_range page_range)
 ;;
 
+let get_inproceedings_fields (entry : raw_entry) : (inproceedings_fields, error) result =
+  let booktitle_key = Key "booktitle" in
+  let pages_key = Key "pages" in
+  let doi_key = Key "doi" in
+  (* load raw *)
+  let booktitle_res = get_string_field entry booktitle_key in
+  let pages_res = get_string_field entry pages_key in
+  let doi_res = get_string_field entry doi_key in
+  (* parse/validate *)
+  let pages_res : (string * string, error) result =
+    Result.bind pages_res (parse_page_range_wrapped entry.tag)
+  in
+  let doi_res : (doi, error) result = Result.bind doi_res (parse_doi_wrapped entry.tag) in
+  (* check if any err'd, yes this is inelegant, no i do not care *)
+  let maybe_err : error option =
+    match booktitle_res with
+    | Error e -> Some e
+    | Ok _ ->
+      (match pages_res with
+       | Error e -> Some e
+       | Ok _ ->
+         (match doi_res with
+          | Error e -> Some e
+          | Ok _ -> None))
+  in
+  match maybe_err with
+  | Some error -> Error error
+  | None ->
+    let booktitle = Result.get_ok booktitle_res in
+    let pages = Result.get_ok pages_res in
+    let doi = Result.get_ok doi_res in
+    Ok { booktitle; pages; doi }
+;;
+
 (* ----------tests---------- *)
 
 let expect cond msg = if not cond then failwith ("FAIL: " ^ msg)
