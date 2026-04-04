@@ -65,14 +65,14 @@ let apply_case (transform : is_first:bool -> string -> string) (segments : segme
   =
   let transform_plain is_first p =
     let words = String.split_on_char ' ' p in
-    let words, _ =
-      List.fold_right
-        (fun w (acc, first) ->
-           if w = "" then w :: acc, first else transform ~is_first:first w :: acc, false)
-        (List.rev words)
+    let rev_words, _ =
+      List.fold_left
+        (fun (acc, first) w ->
+           if w = "" then "" :: acc, first else transform ~is_first:first w :: acc, false)
         ([], is_first)
+        words
     in
-    String.concat " " words
+    String.concat " " (List.rev rev_words)
   in
   let result, _ =
     List.fold_left
