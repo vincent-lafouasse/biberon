@@ -181,6 +181,16 @@ let ieee_format_author_list (author_list : Entry.author list) : blob =
   Text { text; modifier = Normal }
 ;;
 
+let ieee_format_other (etype : Entry.etype) (common : Entry.common_fields) : t =
+  let (Entry.Etype etype_str) = etype in
+  [ ieee_format_author_list common.author
+  ; txt (Printf.sprintf ", \"%s\", " (verbatim_case common.title))
+  ; txt (Printf.sprintf "%s, %d, " etype_str common.year)
+  ; Link { display = "Archive"; url = common.archive }
+  ; txt "."
+  ]
+;;
+
 let ieee_format_inproceedings
       (common : Entry.common_fields)
       (fields : Entry.inproceedings_fields)
