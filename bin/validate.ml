@@ -362,6 +362,83 @@ let test_parse_author_list () =
     show_author_list_result
 ;;
 
+let show_common_fields_result r = [%show: (common_fields, error) result] r
+
+let int_field k v = Key k, Value.Integer v
+
+let make_full_entry tag =
+  make_entry_with_fields
+    tag
+    [| field "author" "Doe, J."
+     ; field "title" "A Great Paper"
+     ; int_field "year" 2024
+     ; field "archive" "arxiv"
+    |]
+;;
+
+let test_get_common_fields () =
+  expect_eq
+    (Ok
+       { author = [ { last = "Doe"; first = [ "J." ] } ]
+       ; title = "A Great Paper"
+       ; year = 2024
+       ; archive = "arxiv"
+       })
+    (get_common_fields (make_full_entry "test"))
+    "happy path"
+    show_common_fields_result;
+  let missing_title =
+    make_entry_with_fields
+      "test"
+      [| field "author" "Doe, J."; int_field "year" 2024; field "archive" "arxiv" |]
+  in
+  expect_eq
+    (Error (MissingField (Key "title", Tag "test")))
+    (get_common_fields missing_title)
+    "missing title"
+    show_common_fields_result;
+  let missing_author =
+    make_entry_with_fields
+      "test"
+      [| field "title" "A Great Paper"; int_field "year" 2024; field "archive" "arxiv" |]
+  in
+  expect_eq
+    (Error (MissingField (Key "author", Tag "test")))
+    (get_common_fields missing_author)
+    "missing author"
+    show_common_fields_result;
+  let year_wrong_type =
+    make_entry_with_fields
+      "test"
+      [| field "author" "Doe, J."
+       ; field "title" "A Great Paper"
+       ; field "year" "twenty twenty four"
+       ; field "archive" "arxiv"
+      |]
+  in
+  expect_eq
+    (Error
+       (ValueTypeMismatch
+          (Key "year", Tag "test", Expected Value.KInteger, Actual Value.KString)))
+    (get_common_fields year_wrong_type)
+    "year must be integer"
+    show_common_fields_result;
+  let malformed_author =
+    make_entry_with_fields
+      "test"
+      [| field "author" "John Smith"
+       ; field "title" "A Great Paper"
+       ; int_field "year" 2024
+       ; field "archive" "arxiv"
+      |]
+  in
+  expect_eq
+    (Error (MalformedAuthorName ("John Smith", Tag "test")))
+    (get_common_fields malformed_author)
+    "author without comma"
+    show_common_fields_result
+;;
+
 let run_test name f =
   f ();
   print_endline (name ^ " ok")
@@ -371,5 +448,6 @@ let __test () =
   run_test "assert_no_duplicate_entry" test_assert_no_duplicate_entry;
   run_test "assert_no_duplicate_field" test_assert_no_duplicate_field;
   run_test "locate_field" test_locate_field;
-  run_test "parse_author_list" test_parse_author_list
+  run_test "parse_author_list" test_parse_author_list;
+  run_test "get_common_fields" test_get_common_fields
 ;;
