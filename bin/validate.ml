@@ -202,6 +202,25 @@ let get_common_fields (entry : raw_entry) : (common_fields, error) result =
        Ok { author = author_list; title; year; archive })
 ;;
 
+(* same as with the authors, error payload is the fautive string. wrapping at
+   callsite *)
+let parse_month (month : string) : (month, string) result =
+  match month with
+  | "jan" -> Ok Jan
+  | "feb" -> Ok Feb
+  | "mar" -> Ok Mar
+  | "apr" -> Ok Apr
+  | "may" -> Ok May
+  | "jun" -> Ok Jun
+  | "jul" -> Ok Jul
+  | "aug" -> Ok Aug
+  | "sep" -> Ok Sep
+  | "oct" -> Ok Oct
+  | "nov" -> Ok Nov
+  | "dec" -> Ok Dec
+  | bad_month -> Error bad_month
+;;
+
 (* ----------tests---------- *)
 
 let expect cond msg = if not cond then failwith ("FAIL: " ^ msg)
