@@ -170,3 +170,23 @@ let ieee_format_author_list (author_list : Entry.author list) : blob =
   in
   Text { text; modifier = Normal }
 ;;
+
+let ieee_format_article (common : Entry.common_fields) (fields : Entry.article_fields) : t
+  =
+  let start_page, end_page = fields.pages in
+  [ ieee_format_author_list common.author
+  ; txt (Printf.sprintf ", \"%s\", " (sentence_case common.title))
+  ; italic (title_case fields.journal)
+  ; txt
+      (Printf.sprintf
+         ", vol. %d, no. %d, pp. %s--%s, %s %d, doi: "
+         fields.volume
+         fields.number
+         start_page
+         end_page
+         (ieee_format_month fields.month)
+         common.year)
+  ; ieee_format_doi fields.doi
+  ; txt "."
+  ]
+;;
