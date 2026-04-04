@@ -297,22 +297,7 @@ let get_article_fields (entry : Entry.raw_entry) : (Entry.article_fields, error)
   Ok { Entry.journal; volume; pages; number; month; doi }
 ;;
 
-let validate_library (raw_lib : Entry.raw_entry array) : (Entry.library, error) result =
-  let ( let* ) = Result.bind in
-  let* () = assert_no_duplicate_entry raw_lib in
-  let* reversed =
-    Array.fold_left
-      (fun acc entry ->
-         let* lst = acc in
-         let* () = assert_no_duplicate_field entry in
-         let* validated = validate_entry entry in
-         Ok (validated :: lst))
-      (Ok [])
-      raw_lib
-  in
-  Ok (List.rev reversed)
-
-and validate_entry (entry : Entry.raw_entry) : (Entry.tag * Entry.t, error) result =
+let validate_entry (entry : Entry.raw_entry) : (Entry.tag * Entry.t, error) result =
   let ( let* ) = Result.bind in
   let* common = get_common_fields entry in
   let (Entry.Etype etype_str) = entry.etype in
@@ -327,6 +312,22 @@ and validate_entry (entry : Entry.raw_entry) : (Entry.tag * Entry.t, error) resu
     | _ -> Ok (Entry.Other (entry.etype, common))
   in
   Ok (entry.tag, typed)
+;;
+
+let validate_library (raw_lib : Entry.raw_entry array) : (Entry.library, error) result =
+  let ( let* ) = Result.bind in
+  let* () = assert_no_duplicate_entry raw_lib in
+  let* reversed =
+    Array.fold_left
+      (fun acc entry ->
+         let* lst = acc in
+         let* () = assert_no_duplicate_field entry in
+         let* validated = validate_entry entry in
+         Ok (validated :: lst))
+      (Ok [])
+      raw_lib
+  in
+  Ok (List.rev reversed)
 ;;
 
 (* ----------tests---------- *)
