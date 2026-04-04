@@ -221,6 +221,12 @@ let parse_month (month : string) : (month, string) result =
   | bad_month -> Error bad_month
 ;;
 
+let parse_page_range (range : string) : (string * string, string) result =
+  match Str.split (Str.regexp "--") range with
+  | [ start_page; end_page ] -> Ok (String.trim start_page, String.trim end_page)
+  | _ -> Error range
+;;
+
 (* ----------tests---------- *)
 
 let expect cond msg = if not cond then failwith ("FAIL: " ^ msg)
