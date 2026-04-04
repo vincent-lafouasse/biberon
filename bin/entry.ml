@@ -81,6 +81,8 @@ type t =
   | Other of etype * common_fields
 [@@deriving show]
 
+type library = (tag * t) list [@@deriving show]
+
 type raw_entry =
   { etype : etype
   ; tag : tag
