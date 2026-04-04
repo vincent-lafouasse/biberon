@@ -37,6 +37,6 @@ let () =
   let lib = Result.get_ok lib in
   let raw_entry = Array.get lib 0 in
   let validation_res = Validate.validate_entry raw_entry in
-  let show_res = [%show: (Entry.tag * Entry.t, error) result] in
+  let show_res = [%show: (Entry.tag * Entry.t, Validate.error) result] in
   print_endline (show_res validation_res)
 ;;
