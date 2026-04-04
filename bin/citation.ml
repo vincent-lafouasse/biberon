@@ -25,7 +25,7 @@ let parse_segments (s : string) : segment list =
   let rec go i plain acc =
     if i >= n
     then List.rev (if plain = "" then acc else Plain plain :: acc)
-    else
+    else (
       match s.[i] with
       | '\\' ->
         let escaped = if i + 1 < n then String.make 1 s.[i + 1] else "" in
@@ -33,15 +33,16 @@ let parse_segments (s : string) : segment list =
       | '{' ->
         let acc = if plain = "" then acc else Plain plain :: acc in
         let rec read_verbatim j verbatim =
-          if j >= n then (verbatim, j)
-          else match s.[j] with
-          | '}' -> (verbatim, j + 1)
-          | c   -> read_verbatim (j + 1) (verbatim ^ String.make 1 c)
+          if j >= n
+          then verbatim, j
+          else (
+            match s.[j] with
+            | '}' -> verbatim, j + 1
+            | c -> read_verbatim (j + 1) (verbatim ^ String.make 1 c))
         in
         let verbatim, j = read_verbatim (i + 1) "" in
         go j "" (Verbatim verbatim :: acc)
-      | c ->
-        go (i + 1) (plain ^ String.make 1 c) acc
+      | c -> go (i + 1) (plain ^ String.make 1 c) acc)
   in
   go 0 "" []
 ;;
