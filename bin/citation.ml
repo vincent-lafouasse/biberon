@@ -1,3 +1,5 @@
+[@@@warning "-69-34-37-32"]
+
 type style = IEEE
 type target = Markdown
 
