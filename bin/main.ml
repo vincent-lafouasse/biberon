@@ -5,6 +5,13 @@ let die msg =
   exit 1
 ;;
 
+let parse_or_die input =
+  let parse_res = Parser.parse input in
+  match parse_res with
+  | Ok entries -> entries
+  | Error err -> die (Parser.format_located_error err input)
+;;
+
 let lamport1983 =
   {|
 @article{Lamport1983,
@@ -33,8 +40,7 @@ let lamport1983 =
 
 let () =
   let () = Printf.printf "%s\n" lamport1983 in
-  let lib = Parser.parse lamport1983 in
-  let lib = Result.get_ok lib in
+  let lib = parse_or_die lamport1983 in
   let raw_entry = Array.get lib 0 in
   let entry_res = Validate.validate_entry raw_entry in
   let _tag, entry = Result.get_ok entry_res in
