@@ -208,8 +208,22 @@ let parse (input : string) : (Entry.raw_entry Array.t, error Position.located) r
 ;;
 
 let format_error (err : error) : string =
-  let _ = err in
-  failwith "unimplemented"
+  let fmt_expected (Expected token) = Token.format token in
+  let fmt_actual (Actual token) = Token.format token in
+  match err with
+  | ExpectedToken (expected, actual) ->
+    Printf.sprintf "Expected %s, found %s" (fmt_expected expected) (fmt_actual actual)
+  | ExpectedEntry actual ->
+    Printf.sprintf "Expected top-level entry, found %s" (fmt_actual actual)
+  | ExpectedTag actual ->
+    Printf.sprintf "Expected entry tag, found %s" (fmt_actual actual)
+  | ExpectedEtype actual ->
+    Printf.sprintf "Expected etype after '@', found %s" (fmt_actual actual)
+  | ExpectedKey actual ->
+    Printf.sprintf "Expected key in key = value pair, found %s" (fmt_actual actual)
+  | ExpectedValue actual ->
+    Printf.sprintf "Expected value in key = value pair, found %s" (fmt_actual actual)
+  | LexerError lexer_error -> Lexer.format_error lexer_error
 ;;
 
 let format_located_error (err : error Position.located) (input : string) : string =
