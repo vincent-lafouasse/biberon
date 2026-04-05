@@ -57,8 +57,10 @@ let () =
   let input = read_file path in
   let lib = parse_or_die input in
   let lib = validate_or_die lib in
-  let _tag, entry = List.nth lib 0 in
-  let citation = Citation.with_style entry Citation.IEEE in
-  let formatted_citation = Citation.format citation Citation.Markdown in
-  print_endline formatted_citation
+  let print_entry (_tag, entry) =
+    let citation = Citation.with_style entry Citation.IEEE in
+    let formatted_citation = Citation.format citation Citation.Markdown in
+    print_endline formatted_citation
+  in
+  List.iter print_entry lib
 ;;
