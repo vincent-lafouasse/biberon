@@ -43,7 +43,8 @@ details:
 
 ## example
 
-from my concurrent lock free queue review
+from my concurrent lock free queue review:
+
 A. Swartz, "Guerilla Open Access Manifesto", misc, 2008, [Archive](https://archive.org/details/GuerillaOpenAccessManifesto).
 
 L. Lamport, "Specifying concurrent program modules", *ACM Trans. Program. Lang. Syst.*, vol. 5, no. 2, pp. 190--222, Apr. 1983, doi: [10.1145/69624.357207](https://doi.org/10.1145/69624.357207), [Archive](https://lamport.azurewebsites.net/pubs/spec.pdf).
