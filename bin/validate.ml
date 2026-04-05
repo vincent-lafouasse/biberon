@@ -397,6 +397,10 @@ let format_error (err : error) : string =
       (format_key field)
 ;;
 
+let format_full_error ((error, Entry.Tag entry_name) : error * Entry.tag) : string =
+  "Validation error in entry " ^ entry_name ^ ": " ^ format_error error
+;;
+
 (* ----------tests---------- *)
 
 let expect cond msg = if not cond then failwith ("FAIL: " ^ msg)
