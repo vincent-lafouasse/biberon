@@ -148,7 +148,7 @@ let tokenize input =
   loop (init input) []
 ;;
 
-let format_error (err : error Position.located) (input : string) : string =
+let format_located_error (err : error Position.located) (input : string) : string =
   let err, loc = err in
   let msg =
     match err with
