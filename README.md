@@ -41,6 +41,18 @@ details:
 - DOI formatted as `doi: 10.XXXX/YYYY` at the end
 - entries end with a period
 
+## example
+
+from my concurrent lock free queue review
+
+A. Swartz, "Guerilla Open Access Manifesto", misc, 2008, [Archive](https://archive.org/details/GuerillaOpenAccessManifesto).
+L. Lamport, "Specifying concurrent program modules", *Acm Trans. Program. Lang. Syst.*, vol. 5, no. 2, pp. 190--222, Apr. 1983, doi: [10.1145/69624.357207](https://doi.org/10.1145/69624.357207), [Archive](https://lamport.azurewebsites.net/pubs/spec.pdf).
+M. M. Michael, and M. L. Scott, "Simple, fast, and practical non-blocking and blocking concurrent queue algorithms", in *15th Annu. Acm Symp. Princ. Distrib. Comput.*, 1996, pp. 267--275, doi: [10.1145/248052.248106](https://doi.org/10.1145/248052.248106), [Archive](https://www.cs.rochester.edu/u/scott/papers/1996_PODC_queues.pdf).
+E. Ladan-Mozes, and N. Shavit, "An optimistic approach to lock-free fifo queues", in *18th Int. Symp. Distrib. Comput.*, 2004, pp. 117--131, doi: [10.1007/978-3-540-30186-8_9](https://doi.org/10.1007/978-3-540-30186-8_9), [Archive](https://people.csail.mit.edu/shanir/publications/FIFO_Queues.pdf).
+J. Giacomoni, T. Moseley, and M. Vachharajani, "Fastforward for efficient pipeline parallelism: a cache-optimized concurrent lock-free queue", in *13th Acm Sigplan Symp. Princ. Pract. Parallel Program.*, 2008, pp. 43--52, doi: [10.1145/1345206.1345215](https://doi.org/10.1145/1345206.1345215), [Archive](https://dl.acm.org/doi/epdf/10.1145/1345206.1345215).
+M. Aldinucci, M. Danelutto, P. Kilpatrick, M. Meneghin, and M. Torquati, "An efficient unbounded lock-free queue for multi-core systems", in *18th Int. Conf. Parallel Process.*, 2012, pp. 662--673, doi: [10.1007/978-3-642-32820-6_65](https://doi.org/10.1007/978-3-642-32820-6_65), [Archive](https://link.springer.com/content/pdf/10.1007/978-3-642-32820-6_65.pdf).
+N. M. Lê, A. Guatto, A. Cohen, and A. Pop, "Correct and efficient bounded fifo queues", in *25th Int. Symp. Comp. Archit. High Perform. Comput.*, 2013, pp. 144--151, doi: [10.1109/SBAC-PAD.2013.8](https://doi.org/10.1109/SBAC-PAD.2013.8), [Archive](https://www.irif.fr/~guatto/publications/sbac13.pdf).
+
 ## ideas for later
 
 - maybe allow some `@mapping` entries for text substitution, because no-one wants to write "IEEE International Conference on Acoustics, Speech and Signal Processing" five times in a row
