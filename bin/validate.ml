@@ -351,6 +351,52 @@ let validate_library (raw_lib : Entry.raw_entry array)
   Ok (List.rev reversed)
 ;;
 
+let format_error (err : error) : string =
+  let quoted string = "\"" ^ string ^ "\"" in
+  let format_value_kind (kind : Entry.Value.kind) =
+    match kind with
+    | Entry.Value.KBoolean -> "Boolean"
+    | Entry.Value.KString -> "String"
+    | Entry.Value.KInteger -> "Integer"
+  in
+  let format_expected_kind (Expected kind) = format_value_kind kind in
+  let format_actual_kind (Actual kind) = format_value_kind kind in
+  let format_key (Entry.Key key) = key in
+  match err with
+  | DuplicateEntry -> "Duplicate entry"
+  | DuplicateField field -> Printf.sprintf "Duplicated field %s" (format_key field)
+  | ValueTypeMismatch (field, expected, actual) ->
+    Printf.sprintf
+      "Value type mismatch in field %s. Expected %s was %s."
+      (format_key field)
+      (format_expected_kind expected)
+      (format_actual_kind actual)
+  | MissingField field -> Printf.sprintf "Missing field %s" (format_key field)
+  | MalformedAuthorName bad_name ->
+    Printf.sprintf
+      "Malformed author name %s. Names must strictly be in `Last, First Second` form."
+      (quoted bad_name)
+  | MalformedDoi bad_doi ->
+    Printf.sprintf
+      "Malformed DOI %s. DOIs must strictly have the form `10.XXXX/XXXXX`"
+      (quoted bad_doi)
+  | MalformedMonth bad_month ->
+    Printf.sprintf
+      "Malformed month %s. Months must follow the standard BibTeX 3-character forms like \
+       `apr` or `jan`"
+      (quoted bad_month)
+  | MalformedPageRange bad_range ->
+    Printf.sprintf
+      "Malformed page range %s. Page indices can be anything (including roman numerals) \
+       but the separator must be 2 ASCII dashes (no Unicode en dash)"
+      (quoted bad_range)
+  | MalformedBraces field ->
+    Printf.sprintf
+      "Malformed verbatim block in field %s. Braces in text fields cannot be nested, and \
+       of course must be terminated"
+      (format_key field)
+;;
+
 (* ----------tests---------- *)
 
 let expect cond msg = if not cond then failwith ("FAIL: " ^ msg)
