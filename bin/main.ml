@@ -46,8 +46,16 @@ let lamport1983 =
 ;;
 
 let () =
-  let () = Printf.printf "%s\n" lamport1983 in
-  let lib = parse_or_die lamport1983 in
+  let path =
+    match Array.length Sys.argv with
+    | 2 -> Sys.argv.(1)
+    | _ -> die "Usage: biberon refs.bib"
+  in
+  let read_file (path : string) : string =
+    In_channel.with_open_bin path In_channel.input_all
+  in
+  let input = read_file path in
+  let lib = parse_or_die input in
   let lib = validate_or_die lib in
   let _tag, entry = List.nth lib 0 in
   let citation = Citation.with_style entry Citation.IEEE in
