@@ -148,6 +148,20 @@ let tokenize input =
   loop (init input) []
 ;;
 
+let format_error (err : error Position.located) (input : string) : string =
+  let err, loc = err in
+  let msg =
+    match err with
+    | UnterminatedString -> Printf.sprintf "Unterminated string started line %d" loc.line
+    | UnrecognizedCharacter c ->
+      let char_repr : string =
+        if Char.Ascii.is_print c then Printf.sprintf "%c" c else Char.escaped c
+      in
+      Printf.sprintf "Unrecognized character %s line %d" char_repr loc.line
+  in
+  Position.report_error loc input msg
+;;
+
 (* ----------tests---------- *)
 
 let expect cond msg = if not cond then failwith ("FAIL: " ^ msg)
