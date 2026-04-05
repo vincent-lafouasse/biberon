@@ -2,16 +2,15 @@ type 'a expected = Expected of 'a [@@deriving show]
 type 'a actual = Actual of 'a [@@deriving show]
 
 type error =
-  | DuplicateEntry of Entry.tag
-  | DuplicateField of Entry.key * Entry.tag
-  | ValueTypeMismatch of
-      Entry.key * Entry.tag * Entry.Value.kind expected * Entry.Value.kind actual
-  | MissingField of Entry.key * Entry.tag
-  | MalformedAuthorName of string * Entry.tag
-  | MalformedDoi of string * Entry.tag
-  | MalformedMonth of string * Entry.tag
-  | MalformedPageRange of string * Entry.tag
-  | MalformedBraces of Entry.key * Entry.tag
+  | DuplicateEntry
+  | DuplicateField of Entry.key
+  | ValueTypeMismatch of Entry.key * Entry.Value.kind expected * Entry.Value.kind actual
+  | MissingField of Entry.key
+  | MalformedAuthorName of string
+  | MalformedDoi of string
+  | MalformedMonth of string
+  | MalformedPageRange of string
+  | MalformedBraces of Entry.key
 [@@deriving show]
 
 module StringMap = Map.Make (String)
@@ -48,7 +47,9 @@ let find_duplicates (key_of : 'a -> string) (collection : 'a array) : string opt
   | Some (tag, _count) -> Some tag
 ;;
 
-let assert_no_duplicate_entry (raw_lib : Entry.raw_entry array) : (unit, error) result =
+let assert_no_duplicate_entry (raw_lib : Entry.raw_entry array)
+  : (unit, error * Entry.tag) result
+  =
   let tag_of (entry : Entry.raw_entry) : string =
     let (Entry.Tag tag) = entry.tag in
     tag
@@ -56,10 +57,12 @@ let assert_no_duplicate_entry (raw_lib : Entry.raw_entry array) : (unit, error) 
   let maybe_duplicate : string option = find_duplicates tag_of raw_lib in
   match maybe_duplicate with
   | None -> Ok ()
-  | Some tag -> Error (DuplicateEntry (Entry.Tag tag))
+  | Some tag -> Error (DuplicateEntry, Entry.Tag tag)
 ;;
 
-let assert_no_duplicate_field (raw_entry : Entry.raw_entry) : (unit, error) result =
+let assert_no_duplicate_field (raw_entry : Entry.raw_entry)
+  : (unit, error * Entry.tag) result
+  =
   let field_name (field : Entry.field) : string =
     let key, _value = field in
     let (Entry.Key key_name) = key in
@@ -68,7 +71,7 @@ let assert_no_duplicate_field (raw_entry : Entry.raw_entry) : (unit, error) resu
   let maybe_duplicate : string option = find_duplicates field_name raw_entry.fields in
   match maybe_duplicate with
   | None -> Ok ()
-  | Some key_name -> Error (DuplicateField (Entry.Key key_name, raw_entry.tag))
+  | Some key_name -> Error (DuplicateField (Entry.Key key_name), raw_entry.tag)
 ;;
 
 let locate_field (raw_entry : Entry.raw_entry) (field_name : string)
@@ -95,19 +98,21 @@ let unwrap_int (value : Entry.Value.t) : int =
   | _ -> failwith "unwrap_int on non int value"
 ;;
 
-let get_string_field (entry : Entry.raw_entry) (key : Entry.key) : (string, error) result =
+let get_string_field (entry : Entry.raw_entry) (key : Entry.key)
+  : (string, error * Entry.tag) result
+  =
   let (Entry.Key key_name) = key in
   let maybe_value : Entry.Value.t option = locate_field entry key_name in
-  let value_res : (Entry.Value.t, error) result =
-    Option.to_result ~none:(MissingField (key, entry.tag)) maybe_value
+  let value_res : (Entry.Value.t, error * Entry.tag) result =
+    Option.to_result ~none:(MissingField key, entry.tag) maybe_value
   in
-  let unwrap_string_or_err (value : Entry.Value.t) : (string, error) result =
+  let unwrap_string_or_err (value : Entry.Value.t) : (string, error * Entry.tag) result =
     if Entry.Value.kind_of value = Entry.Value.KString
     then Ok (unwrap_string value)
     else (
       let expected = Expected Entry.Value.KString in
       let actual = Actual (Entry.Value.kind_of value) in
-      Error (ValueTypeMismatch (key, entry.tag, expected, actual)))
+      Error (ValueTypeMismatch (key, expected, actual), entry.tag))
   in
   Result.bind value_res unwrap_string_or_err
 ;;
@@ -130,25 +135,29 @@ let validate_braces (s : string) : bool =
   go 0 0
 ;;
 
-let get_text_field (entry : Entry.raw_entry) (key : Entry.key) : (string, error) result =
+let get_text_field (entry : Entry.raw_entry) (key : Entry.key)
+  : (string, error * Entry.tag) result
+  =
   let ( let* ) = Result.bind in
   let* s = get_string_field entry key in
-  if validate_braces s then Ok s else Error (MalformedBraces (key, entry.tag))
+  if validate_braces s then Ok s else Error (MalformedBraces key, entry.tag)
 ;;
 
-let get_int_field (entry : Entry.raw_entry) (key : Entry.key) : (int, error) result =
+let get_int_field (entry : Entry.raw_entry) (key : Entry.key)
+  : (int, error * Entry.tag) result
+  =
   let (Entry.Key key_name) = key in
   let maybe_value : Entry.Value.t option = locate_field entry key_name in
-  let value_res : (Entry.Value.t, error) result =
-    Option.to_result ~none:(MissingField (key, entry.tag)) maybe_value
+  let value_res : (Entry.Value.t, error * Entry.tag) result =
+    Option.to_result ~none:(MissingField key, entry.tag) maybe_value
   in
-  let unwrap_int_or_err (value : Entry.Value.t) : (int, error) result =
+  let unwrap_int_or_err (value : Entry.Value.t) : (int, error * Entry.tag) result =
     if Entry.Value.kind_of value = Entry.Value.KInteger
     then Ok (unwrap_int value)
     else (
       let expected = Expected Entry.Value.KInteger in
       let actual = Actual (Entry.Value.kind_of value) in
-      Error (ValueTypeMismatch (key, entry.tag, expected, actual)))
+      Error (ValueTypeMismatch (key, expected, actual), entry.tag))
   in
   Result.bind value_res unwrap_int_or_err
 ;;
@@ -185,14 +194,16 @@ let parse_author_list (author_list_str : string) : (Entry.author list, string) r
 ;;
 
 let parse_author_list_wrapped (tag : Entry.tag) (author_list_str : string)
-  : (Entry.author list, error) result
+  : (Entry.author list, error * Entry.tag) result
   =
   Result.map_error
-    (fun bad_name -> MalformedAuthorName (bad_name, tag))
+    (fun bad_name -> MalformedAuthorName bad_name, tag)
     (parse_author_list author_list_str)
 ;;
 
-let get_common_fields (entry : Entry.raw_entry) : (Entry.common_fields, error) result =
+let get_common_fields (entry : Entry.raw_entry)
+  : (Entry.common_fields, error * Entry.tag) result
+  =
   let ( let* ) = Result.bind in
   let* author_str = get_string_field entry (Entry.Key "author") in
   let* author = parse_author_list_wrapped entry.tag author_str in
@@ -255,24 +266,28 @@ let parse_doi (raw : string) : (Entry.doi, string) result =
       if String.length suffix = 0 then Error raw else Ok { Entry.prefix; suffix })
 ;;
 
-let parse_month_wrapped (tag : Entry.tag) (month : string) : (Entry.month, error) result =
-  Result.map_error (fun _ -> MalformedMonth (month, tag)) (parse_month month)
+let parse_month_wrapped (tag : Entry.tag) (month : string)
+  : (Entry.month, error * Entry.tag) result
+  =
+  Result.map_error (fun _ -> MalformedMonth month, tag) (parse_month month)
 ;;
 
-let parse_doi_wrapped (tag : Entry.tag) (doi : string) : (Entry.doi, error) result =
-  Result.map_error (fun _ -> MalformedDoi (doi, tag)) (parse_doi doi)
+let parse_doi_wrapped (tag : Entry.tag) (doi : string)
+  : (Entry.doi, error * Entry.tag) result
+  =
+  Result.map_error (fun _ -> MalformedDoi doi, tag) (parse_doi doi)
 ;;
 
 let parse_page_range_wrapped (tag : Entry.tag) (page_range : string)
-  : (string * string, error) result
+  : (string * string, error * Entry.tag) result
   =
   Result.map_error
-    (fun _ -> MalformedPageRange (page_range, tag))
+    (fun _ -> MalformedPageRange page_range, tag)
     (parse_page_range page_range)
 ;;
 
 let get_inproceedings_fields (entry : Entry.raw_entry)
-  : (Entry.inproceedings_fields, error) result
+  : (Entry.inproceedings_fields, error * Entry.tag) result
   =
   let ( let* ) = Result.bind in
   let* booktitle = get_text_field entry (Entry.Key "booktitle") in
@@ -283,7 +298,9 @@ let get_inproceedings_fields (entry : Entry.raw_entry)
   Ok { Entry.booktitle; pages; doi }
 ;;
 
-let get_article_fields (entry : Entry.raw_entry) : (Entry.article_fields, error) result =
+let get_article_fields (entry : Entry.raw_entry)
+  : (Entry.article_fields, error * Entry.tag) result
+  =
   let ( let* ) = Result.bind in
   let* journal = get_text_field entry (Entry.Key "journal") in
   let* volume = get_int_field entry (Entry.Key "volume") in
@@ -297,7 +314,9 @@ let get_article_fields (entry : Entry.raw_entry) : (Entry.article_fields, error)
   Ok { Entry.journal; volume; pages; number; month; doi }
 ;;
 
-let validate_entry (entry : Entry.raw_entry) : (Entry.tag * Entry.t, error) result =
+let validate_entry (entry : Entry.raw_entry)
+  : (Entry.tag * Entry.t, error * Entry.tag) result
+  =
   let ( let* ) = Result.bind in
   let* common = get_common_fields entry in
   let (Entry.Etype etype_str) = entry.etype in
@@ -314,7 +333,9 @@ let validate_entry (entry : Entry.raw_entry) : (Entry.tag * Entry.t, error) resu
   Ok (entry.tag, typed)
 ;;
 
-let validate_library (raw_lib : Entry.raw_entry array) : (Entry.library, error) result =
+let validate_library (raw_lib : Entry.raw_entry array)
+  : (Entry.library, error * Entry.tag) result
+  =
   let ( let* ) = Result.bind in
   let* () = assert_no_duplicate_entry raw_lib in
   let* reversed =
@@ -345,7 +366,7 @@ let expect_eq expected actual msg show =
     exit 1)
 ;;
 
-let show_result r = [%show: (unit, error) result] r
+let show_result r = [%show: (unit, error * Entry.tag) result] r
 
 let make_entry tag : Entry.raw_entry =
   { etype = Entry.Etype "misc"; tag = Entry.Tag tag; fields = [||] }
@@ -368,19 +389,19 @@ let test_assert_no_duplicate_entry () =
     show_result;
   (* single duplication *)
   expect_eq
-    (Error (DuplicateEntry (Entry.Tag "a")))
+    (Error (DuplicateEntry, Entry.Tag "a"))
     (assert_no_duplicate_entry [| make_entry "a"; make_entry "a" |])
     "single duplication: reports duplicate tag"
     show_result;
   (* duplicate is not the only entry *)
   expect_eq
-    (Error (DuplicateEntry (Entry.Tag "b")))
+    (Error (DuplicateEntry, Entry.Tag "b"))
     (assert_no_duplicate_entry [| make_entry "a"; make_entry "b"; make_entry "b" |])
     "duplicate among others: reports duplicate tag"
     show_result;
   (* duplicate appears first *)
   expect_eq
-    (Error (DuplicateEntry (Entry.Tag "a")))
+    (Error (DuplicateEntry, Entry.Tag "a"))
     (assert_no_duplicate_entry [| make_entry "a"; make_entry "b"; make_entry "a" |])
     "duplicate appears first: reports correct tag"
     show_result
@@ -393,7 +414,7 @@ let make_entry_with_fields tag fields : Entry.raw_entry =
 let field k v : Entry.field = Entry.Key k, Entry.Value.String v
 let int_field k v : Entry.field = Entry.Key k, Entry.Value.Integer v
 
-let show_field_result r = [%show: (unit, error) result] r
+let show_field_result r = [%show: (unit, error * Entry.tag) result] r
 let show_value_opt r = [%show: Entry.Value.t option] r
 
 let test_assert_no_duplicate_field () =
@@ -411,7 +432,7 @@ let test_assert_no_duplicate_field () =
     show_field_result;
   let dup = make_entry_with_fields "e" [| field "a" "1"; field "a" "2" |] in
   expect_eq
-    (Error (DuplicateField (Entry.Key "a", Entry.Tag "e")))
+    (Error (DuplicateField (Entry.Key "a"), Entry.Tag "e"))
     (assert_no_duplicate_field dup)
     "duplicate field: reports key and tag"
     show_field_result;
@@ -419,7 +440,7 @@ let test_assert_no_duplicate_field () =
     make_entry_with_fields "e" [| field "a" "1"; field "b" "2"; field "b" "3" |]
   in
   expect_eq
-    (Error (DuplicateField (Entry.Key "b", Entry.Tag "e")))
+    (Error (DuplicateField (Entry.Key "b"), Entry.Tag "e"))
     (assert_no_duplicate_field dup_not_first)
     "duplicate not first: reports correct key"
     show_field_result
@@ -494,7 +515,9 @@ let test_parse_author_list () =
     show_author_list_result
 ;;
 
-let show_common_fields_result r = [%show: (Entry.common_fields, error) result] r
+let show_common_fields_result r =
+  [%show: (Entry.common_fields, error * Entry.tag) result] r
+;;
 
 let make_full_entry tag =
   make_entry_with_fields
@@ -523,7 +546,7 @@ let test_get_common_fields () =
       [| field "author" "Doe, J."; int_field "year" 2024; field "archive" "arxiv" |]
   in
   expect_eq
-    (Error (MissingField (Entry.Key "title", Entry.Tag "test")))
+    (Error (MissingField (Entry.Key "title"), Entry.Tag "test"))
     (get_common_fields missing_title)
     "missing title"
     show_common_fields_result;
@@ -533,7 +556,7 @@ let test_get_common_fields () =
       [| field "title" "A Great Paper"; int_field "year" 2024; field "archive" "arxiv" |]
   in
   expect_eq
-    (Error (MissingField (Entry.Key "author", Entry.Tag "test")))
+    (Error (MissingField (Entry.Key "author"), Entry.Tag "test"))
     (get_common_fields missing_author)
     "missing author"
     show_common_fields_result;
@@ -548,11 +571,9 @@ let test_get_common_fields () =
   in
   expect_eq
     (Error
-       (ValueTypeMismatch
-          ( Entry.Key "year"
-          , Entry.Tag "test"
-          , Expected Entry.Value.KInteger
-          , Actual Entry.Value.KString )))
+       ( ValueTypeMismatch
+           (Entry.Key "year", Expected Entry.Value.KInteger, Actual Entry.Value.KString)
+       , Entry.Tag "test" ))
     (get_common_fields year_wrong_type)
     "year must be integer"
     show_common_fields_result;
@@ -566,13 +587,13 @@ let test_get_common_fields () =
       |]
   in
   expect_eq
-    (Error (MalformedAuthorName ("John Smith", Entry.Tag "test")))
+    (Error (MalformedAuthorName "John Smith", Entry.Tag "test"))
     (get_common_fields malformed_author)
     "author without comma"
     show_common_fields_result
 ;;
 
-let show_entry_result r = [%show: (Entry.tag * Entry.t, error) result] r
+let show_entry_result r = [%show: (Entry.tag * Entry.t, error * Entry.tag) result] r
 
 (* build a raw_entry with an explicit etype string *)
 let make_typed_entry etype tag fields : Entry.raw_entry =
@@ -665,14 +686,14 @@ let test_validate_entry_article () =
     show_entry_result;
   (* missing journal *)
   expect_eq
-    (Error (MissingField (Entry.Key "journal", Entry.Tag "test")))
+    (Error (MissingField (Entry.Key "journal"), Entry.Tag "test"))
     (validate_entry
        (make_typed_entry "article" "test" (without "journal" all_article_fields)))
     "article: missing journal"
     show_entry_result;
   (* missing volume *)
   expect_eq
-    (Error (MissingField (Entry.Key "volume", Entry.Tag "test")))
+    (Error (MissingField (Entry.Key "volume"), Entry.Tag "test"))
     (validate_entry
        (make_typed_entry "article" "test" (without "volume" all_article_fields)))
     "article: missing volume"
@@ -680,11 +701,9 @@ let test_validate_entry_article () =
   (* volume wrong type *)
   expect_eq
     (Error
-       (ValueTypeMismatch
-          ( Entry.Key "volume"
-          , Entry.Tag "test"
-          , Expected Entry.Value.KInteger
-          , Actual Entry.Value.KString )))
+       ( ValueTypeMismatch
+           (Entry.Key "volume", Expected Entry.Value.KInteger, Actual Entry.Value.KString)
+       , Entry.Tag "test" ))
     (validate_entry
        (make_typed_entry
           "article"
@@ -694,14 +713,14 @@ let test_validate_entry_article () =
     show_entry_result;
   (* missing pages *)
   expect_eq
-    (Error (MissingField (Entry.Key "pages", Entry.Tag "test")))
+    (Error (MissingField (Entry.Key "pages"), Entry.Tag "test"))
     (validate_entry
        (make_typed_entry "article" "test" (without "pages" all_article_fields)))
     "article: missing pages"
     show_entry_result;
   (* malformed pages — single dash instead of double *)
   expect_eq
-    (Error (MalformedPageRange ("1-10", Entry.Tag "test")))
+    (Error (MalformedPageRange "1-10", Entry.Tag "test"))
     (validate_entry
        (make_typed_entry
           "article"
@@ -711,14 +730,14 @@ let test_validate_entry_article () =
     show_entry_result;
   (* missing month *)
   expect_eq
-    (Error (MissingField (Entry.Key "month", Entry.Tag "test")))
+    (Error (MissingField (Entry.Key "month"), Entry.Tag "test"))
     (validate_entry
        (make_typed_entry "article" "test" (without "month" all_article_fields)))
     "article: missing month"
     show_entry_result;
   (* malformed month — full name not accepted *)
   expect_eq
-    (Error (MalformedMonth ("january", Entry.Tag "test")))
+    (Error (MalformedMonth "january", Entry.Tag "test"))
     (validate_entry
        (make_typed_entry
           "article"
@@ -728,14 +747,14 @@ let test_validate_entry_article () =
     show_entry_result;
   (* missing doi *)
   expect_eq
-    (Error (MissingField (Entry.Key "doi", Entry.Tag "test")))
+    (Error (MissingField (Entry.Key "doi"), Entry.Tag "test"))
     (validate_entry
        (make_typed_entry "article" "test" (without "doi" all_article_fields)))
     "article: missing doi"
     show_entry_result;
   (* malformed doi — no 10. prefix *)
   expect_eq
-    (Error (MalformedDoi ("not-a-doi", Entry.Tag "test")))
+    (Error (MalformedDoi "not-a-doi", Entry.Tag "test"))
     (validate_entry
        (make_typed_entry
           "article"
@@ -775,7 +794,7 @@ let test_validate_entry_inproceedings () =
     show_entry_result;
   (* missing booktitle *)
   expect_eq
-    (Error (MissingField (Entry.Key "booktitle", Entry.Tag "test")))
+    (Error (MissingField (Entry.Key "booktitle"), Entry.Tag "test"))
     (validate_entry
        (make_typed_entry
           "inproceedings"
@@ -785,7 +804,7 @@ let test_validate_entry_inproceedings () =
     show_entry_result;
   (* missing pages *)
   expect_eq
-    (Error (MissingField (Entry.Key "pages", Entry.Tag "test")))
+    (Error (MissingField (Entry.Key "pages"), Entry.Tag "test"))
     (validate_entry
        (make_typed_entry
           "inproceedings"
@@ -795,7 +814,7 @@ let test_validate_entry_inproceedings () =
     show_entry_result;
   (* malformed pages *)
   expect_eq
-    (Error (MalformedPageRange ("1-10", Entry.Tag "test")))
+    (Error (MalformedPageRange "1-10", Entry.Tag "test"))
     (validate_entry
        (make_typed_entry
           "inproceedings"
@@ -805,14 +824,14 @@ let test_validate_entry_inproceedings () =
     show_entry_result;
   (* missing doi *)
   expect_eq
-    (Error (MissingField (Entry.Key "doi", Entry.Tag "test")))
+    (Error (MissingField (Entry.Key "doi"), Entry.Tag "test"))
     (validate_entry
        (make_typed_entry "inproceedings" "test" (without "doi" all_inproceedings_fields)))
     "inproceedings: missing doi"
     show_entry_result;
   (* malformed doi *)
   expect_eq
-    (Error (MalformedDoi ("bad", Entry.Tag "test")))
+    (Error (MalformedDoi "bad", Entry.Tag "test"))
     (validate_entry
        (make_typed_entry
           "inproceedings"
@@ -843,7 +862,7 @@ let test_validate_entry_other () =
     show_entry_result;
   (* common field errors still apply to other *)
   expect_eq
-    (Error (MissingField (Entry.Key "title", Entry.Tag "test")))
+    (Error (MissingField (Entry.Key "title"), Entry.Tag "test"))
     (validate_entry (make_typed_entry "misc" "test" (without "title" base_common)))
     "other: missing common field still errors"
     show_entry_result
@@ -852,30 +871,28 @@ let test_validate_entry_other () =
 let test_validate_entry_common_errors () =
   (* test common field errors via article so etype resolution is not the confounder *)
   expect_eq
-    (Error (MissingField (Entry.Key "author", Entry.Tag "test")))
+    (Error (MissingField (Entry.Key "author"), Entry.Tag "test"))
     (validate_entry
        (make_typed_entry "article" "test" (without "author" all_article_fields)))
     "common: missing author"
     show_entry_result;
   expect_eq
-    (Error (MissingField (Entry.Key "title", Entry.Tag "test")))
+    (Error (MissingField (Entry.Key "title"), Entry.Tag "test"))
     (validate_entry
        (make_typed_entry "article" "test" (without "title" all_article_fields)))
     "common: missing title"
     show_entry_result;
   expect_eq
-    (Error (MissingField (Entry.Key "year", Entry.Tag "test")))
+    (Error (MissingField (Entry.Key "year"), Entry.Tag "test"))
     (validate_entry
        (make_typed_entry "article" "test" (without "year" all_article_fields)))
     "common: missing year"
     show_entry_result;
   expect_eq
     (Error
-       (ValueTypeMismatch
-          ( Entry.Key "year"
-          , Entry.Tag "test"
-          , Expected Entry.Value.KInteger
-          , Actual Entry.Value.KString )))
+       ( ValueTypeMismatch
+           (Entry.Key "year", Expected Entry.Value.KInteger, Actual Entry.Value.KString)
+       , Entry.Tag "test" ))
     (validate_entry
        (make_typed_entry
           "article"
@@ -884,7 +901,7 @@ let test_validate_entry_common_errors () =
     "common: year wrong type"
     show_entry_result;
   expect_eq
-    (Error (MalformedAuthorName ("John Smith", Entry.Tag "test")))
+    (Error (MalformedAuthorName "John Smith", Entry.Tag "test"))
     (validate_entry
        (make_typed_entry
           "article"
@@ -894,7 +911,7 @@ let test_validate_entry_common_errors () =
     show_entry_result;
   (* common errors take precedence over specific field errors *)
   expect_eq
-    (Error (MissingField (Entry.Key "author", Entry.Tag "test")))
+    (Error (MissingField (Entry.Key "author"), Entry.Tag "test"))
     (validate_entry
        (make_typed_entry
           "article"
