@@ -207,6 +207,16 @@ let parse (input : string) : (Entry.raw_entry Array.t, error Position.located) r
   Result.bind parser_res gather_all_entries
 ;;
 
+let format_error (err : error) : string =
+  let _ = err in
+  failwith "unimplemented"
+;;
+
+let format_located_error (err : error Position.located) (input : string) : string =
+  let err, loc = err in
+  Position.report_error loc input (format_error err)
+;;
+
 (* ----------tests---------- *)
 
 let expect cond msg = if not cond then failwith ("FAIL: " ^ msg)
