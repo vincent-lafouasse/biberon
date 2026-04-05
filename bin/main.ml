@@ -12,6 +12,13 @@ let parse_or_die input =
   | Error err -> die (Parser.format_located_error err input)
 ;;
 
+let validate_or_die lib =
+  let lib_res = Validate.validate_library lib in
+  match lib_res with
+  | Ok lib -> lib
+  | Error err -> die (Validate.format_full_error err)
+;;
+
 let lamport1983 =
   {|
 @article{Lamport1983,
@@ -41,9 +48,8 @@ let lamport1983 =
 let () =
   let () = Printf.printf "%s\n" lamport1983 in
   let lib = parse_or_die lamport1983 in
-  let raw_entry = Array.get lib 0 in
-  let entry_res = Validate.validate_entry raw_entry in
-  let _tag, entry = Result.get_ok entry_res in
+  let lib = validate_or_die lib in
+  let _tag, entry = List.nth lib 0 in
   let citation = Citation.with_style entry Citation.IEEE in
   let formatted_citation = Citation.format citation Citation.Markdown in
   print_endline formatted_citation
