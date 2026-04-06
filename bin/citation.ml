@@ -1,4 +1,4 @@
-[@@@warning "-69-34-37-32"]
+[@@@warning "-37"]
 
 type style = IEEE
 type target = Markdown
