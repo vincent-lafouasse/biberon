@@ -64,6 +64,7 @@ N. M. Lê, A. Guatto, A. Cohen, and A. Pop, "Correct and efficient bounded FIFO 
 ## ideas for later
 
 - add a `journal_long` (resp. `booktitle_long`) optional field for articles (resp. inproceedings) with the full name of the collection. the .bib has always been self documentation to me and i would find it useful to record the display name of a journal (e.g. *ACM Trans. Program. Lang. Syst.*) but also the full name (e.g. *ACM Transactions on Programming Languages and Systems*)
+    - a consequence of this is that the mandatory `journal` field will then be required to be shortened using usual abbreviations 
 - maybe allow some `@mapping` entries for text substitution, because no-one wants to write "IEEE International Conference on Acoustics, Speech and Signal Processing" five times in a row
 - or maybe those mappings could be passed from an optionally passed spec file, not sure
 - cover more citation styles
